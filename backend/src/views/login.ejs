@@ -1,18 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
-  <link rel="stylesheet" href="/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .notification {
+            animation: fadeIn 0.3s ease-in, fadeOut 0.3s ease-out 4.7s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+    </style>
 </head>
-<body>
-  <h1>Login</h1>
-  <form action="/api/login" method="POST">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <button type="submit">Login</button>
-  </form>
-  <a href="/">Back to Home</a>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div id="notification-container" class="fixed top-4 z-50 w-full flex justify-center">
+        <div id="error-message" class="text-red-500 bg-white p-4 rounded-md shadow-md hidden max-w-sm flex items-center"></div>
+        <div id="success-message" class="text-green-500 bg-white p-4 rounded-md shadow-md hidden max-w-sm flex items-center">
+            <span class="inline-block w-6 h-6 bg-green-500 text-white rounded-full text-center mr-2">✔</span>
+            <span>Login successful! Redirecting...</span>
+        </div>
+    </div>
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
+        <form id="loginForm">
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="email" name="email" class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <div id="email-error" class="text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <div id="password-error" class="text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+            <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Login</button>
+        </form>
+        <p class="mt-4 text-center text-sm text-gray-600">
+            Don't have an account? 
+            <a href="/signup/" class="text-blue-500 hover:text-blue-700 underline">Sign Up</a>
+        </p>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const emailError = document.getElementById('email-error');
+        const passwordError = document.getElementById('password-error');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        let notificationTimeout = null;
+
+        function showNotification(element, message) {
+            if (notificationTimeout) {
+                clearTimeout(notificationTimeout);
+            }
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+            element.textContent = '';
+            element.innerHTML = `<span class="inline-block w-6 h-6 bg-${element === successMessage ? 'green' : 'red'}-500 text-white rounded-full text-center mr-2">✔</span><span>${message}</span>`;
+            element.classList.remove('hidden');
+            element.classList.add('notification');
+            notificationTimeout = setTimeout(() => {
+                element.classList.add('hidden');
+                element.classList.remove('notification');
+                element.textContent = '';
+            }, 5000);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Reset styles and messages
+            emailInput.classList.remove('border-red-500');
+            passwordInput.classList.remove('border-red-500');
+            emailError.classList.add('hidden');
+            passwordError.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+            emailError.textContent = '';
+            passwordError.textContent = '';
+            errorMessage.textContent = '';
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            // Client-side validation
+            let hasError = false;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                emailError.textContent = 'Please enter a valid email address';
+                emailError.classList.remove('hidden');
+                emailInput.classList.add('border-red-500');
+                hasError = true;
+            }
+            if (password.length < 6) {
+                passwordError.textContent = 'Password must be at least 6 characters';
+                passwordError.classList.remove('hidden');
+                passwordInput.classList.add('border-red-500');
+                hasError = true;
+            }
+            if (hasError) return;
+
+            try {
+                const payload = { email, password };
+                console.log('Trying payload:', payload);
+                const response = await fetch('http://localhost:5001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                console.log('API Response:', response.status, data);
+
+                if (response.ok) {
+                    showNotification(successMessage, 'Login successful! Redirecting...');
+                    form.reset();
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                } else {
+                    // Handle field-specific errors
+                    if (data.email) {
+                        emailError.textContent = data.email.join(', ');
+                        emailError.classList.remove('hidden');
+                        emailInput.classList.add('border-red-500');
+                    }
+                    if (data.password) {
+                        passwordError.textContent = data.password.join(', ');
+                        passwordError.classList.remove('hidden');
+                        passwordInput.classList.add('border-red-500');
+                    }
+                    // Handle general errors
+                    if (data.message || data.detail) {
+                        showNotification(errorMessage, data.message || data.detail);
+                        // Highlight all fields if "all fields are required"
+                        if ((data.message || data.detail || '').toLowerCase().includes('all fields are required')) {
+                            emailInput.classList.add('border-red-500');
+                            passwordInput.classList.add('border-red-500');
+                        }
+                    } else {
+                        showNotification(errorMessage, 'Login failed. Check your credentials.');
+                    }
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showNotification(errorMessage, 'An error occurred. Please check your API server.');
+            }
+        });
+    </script>
 </body>
 </html>

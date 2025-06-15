@@ -1,19 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signup</title>
-  <link rel="stylesheet" href="/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .notification {
+            animation: fadeIn 0.3s ease-in, fadeOut 0.3s ease-out 4.7s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+    </style>
 </head>
-<body>
-  <h1>Signup</h1>
-  <form action="/api/signup" method="POST">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <button type="submit">Signup</button>
-  </form>
-  <a href="/">Back to Home</a>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div id="notification-container" class="fixed top-4 z-50 w-full flex justify-center">
+        <div id="error-message" class="text-red-500 bg-white p-4 rounded-md shadow-md hidden max-w-sm flex items-center"></div>
+        <div id="success-message" class="text-green-500 bg-white p-4 rounded-md shadow-md hidden max-w-sm flex items-center">
+            <span class="inline-block w-6 h-6 bg-green-500 text-white rounded-full text-center mr-2">✔</span>
+            <span>Signup successful! Redirecting to login...</span>
+        </div>
+    </div>
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+        <form id="signupForm">
+            <div class="mb-4">
+                <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" id="fullName" name="fullName" class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <div id="fullName-error" class="text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="email" name="email" class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <div id="email-error" class="text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <div id="password-error" class="text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+            <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Sign Up</button>
+        </form>
+        <p class="mt-4 text-center text-sm text-gray-600">
+            Already have an account? 
+            <a href="/login/" class="text-blue-500 hover:text-blue-700 underline">Login</a>
+        </p>
+    </div>
+
+    <script>
+        const form = document.getElementById('signupForm');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const fullNameError = document.getElementById('fullName-error');
+        const emailError = document.getElementById('email-error');
+        const passwordError = document.getElementById('password-error');
+        const fullNameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        let notificationTimeout = null;
+
+        function showNotification(element, message) {
+            if (notificationTimeout) {
+                clearTimeout(notificationTimeout);
+            }
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+            element.textContent = '';
+            element.innerHTML = `<span class="inline-block w-6 h-6 bg-${element === successMessage ? 'green' : 'red'}-500 text-white rounded-full text-center mr-2">✔</span><span>${message}</span>`;
+            element.classList.remove('hidden');
+            element.classList.add('notification');
+            notificationTimeout = setTimeout(() => {
+                element.classList.add('hidden');
+                element.classList.remove('notification');
+                element.textContent = '';
+            }, 5000);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Reset styles and messages
+            fullNameInput.classList.remove('border-red-500');
+            emailInput.classList.remove('border-red-500');
+            passwordInput.classList.remove('border-red-500');
+            fullNameError.classList.add('hidden');
+            emailError.classList.add('hidden');
+            passwordError.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+            fullNameError.textContent = '';
+            emailError.textContent = '';
+            passwordError.textContent = '';
+            errorMessage.textContent = '';
+
+            const fullName = fullNameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            // Client-side validation
+            let hasError = false;
+            if (fullName.length < 2) {
+                fullNameError.textContent = 'Full name must be at least 2 characters';
+                fullNameError.classList.remove('hidden');
+                fullNameInput.classList.add('border-red-500');
+                hasError = true;
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                emailError.textContent = 'Please enter a valid email address';
+                emailError.classList.remove('hidden');
+                emailInput.classList.add('border-red-500');
+                hasError = true;
+            }
+            if (password.length < 6) {
+                passwordError.textContent = 'Password must be at least 6 characters';
+                passwordError.classList.remove('hidden');
+                passwordInput.classList.add('border-red-500');
+                hasError = true;
+            }
+            if (hasError) return;
+
+            try {
+                // Try different payload variations to match API expectations
+                const payloads = [
+                    { fullName, email, password },
+                    { name: fullName, email, password },
+                    { username: fullName, email, password }
+                ];
+
+                let response, data;
+                for (const payload of payloads) {
+                    console.log('Trying payload:', payload);
+                    response = await fetch('http://localhost:5001/api/auth/signup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    data = await response.json();
+                    console.log('API Response:', response.status, data);
+
+                    if (response.ok) {
+                        showNotification(successMessage, 'Signup successful! Redirecting to login...');
+                        form.reset();
+                        setTimeout(() => {
+                            window.location.href = '/login/';
+                        }, 2000);
+                        return;
+                    }
+                    // If the error isn't about missing fields, break to show the error
+                    if (!data.message || !data.message.toLowerCase().includes('all fields are required')) {
+                        break;
+                    }
+                }
+
+                // Handle API errors
+                if (data.fullName || data.name || data.username) {
+                    fullNameError.textContent = (data.fullName || data.name || data.username).join(', ');
+                    fullNameError.classList.remove('hidden');
+                    fullNameInput.classList.add('border-red-500');
+                }
+                if (data.email) {
+                    emailError.textContent = data.email.join(', ');
+                    emailError.classList.remove('hidden');
+                    emailInput.classList.add('border-red-500');
+                }
+                if (data.password) {
+                    passwordError.textContent = data.password.join(', ');
+                    passwordError.classList.remove('hidden');
+                    passwordInput.classList.add('border-red-500');
+                }
+                if (data.message || data.detail) {
+                    showNotification(errorMessage, data.message || data.detail);
+                    // Highlight all fields if "all fields are required"
+                    if ((data.message || data.detail || '').toLowerCase().includes('all fields are required')) {
+                        fullNameInput.classList.add('border-red-500');
+                        emailInput.classList.add('border-red-500');
+                        passwordInput.classList.add('border-red-500');
+                    }
+                } else {
+                    showNotification(errorMessage, 'Signup failed. Check console for details.');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showNotification(errorMessage, 'An error occurred. Please check your API server.');
+            }
+        });
+    </script>
 </body>
 </html>

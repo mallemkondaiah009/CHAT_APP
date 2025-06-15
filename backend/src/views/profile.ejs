@@ -1,15 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile</title>
-  <link rel="stylesheet" href="/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .profile-pic-container {
+            position: relative;
+            display: inline-block;
+        }
+        .pencil-icon {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            padding: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .profile-pic-container:hover .pencil-icon {
+            opacity: 1;
+        }
+        .profile-pic {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .notification {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+        .spinner-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+        .spinner {
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-top: 8px solid #ffffff;
+            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-  <h1>User Profile</h1>
-  <p>Name: John Doe</p>
-  <p>Email: john@example.com</p>
-  <a href="/">Back to Home</a>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="container max-w-md mx-auto p-6">
+        <div class="profile-card bg-white rounded-2xl shadow-lg p-8 text-center transform transition-all duration-300 hover:shadow-xl relative">
+            <div id="notification-container" class="notification">
+                <p id="error-message" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hidden"></p>
+                <p id="success-message" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm hidden"></p>
+            </div>
+            <div id="spinner" class="spinner-container hidden">
+                <div class="spinner"></div>
+            </div>
+            <div class="profile-pic-container">
+                <img id="profile-pic" src="" alt="Profile Picture" class="profile-pic w-24 h-24 rounded-full object-cover mb-4 mx-auto" style="display: none;">
+                <svg id="pencil-icon" class="pencil-icon w-6 h-6 text-white cursor-pointer" onclick="document.getElementById('profile-pic-upload').click()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+            </div>
+            <h2 id="full-name" class="text-2xl font-semibold text-gray-800 mb-2">Loading...</h2>
+            <p id="email" class="text-gray-600 mb-1">Loading...</p>
+            <p id="user-id" class="text-gray-500 text-sm mb-4">Loading...</p>
+            <input type="file" id="profile-pic-upload" accept="image/*" class="hidden" onchange="uploadProfilePic()">
+            <div class="flex justify-center">
+                <button onclick="logout()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to hide notifications after 5 seconds
+        function hideNotification(element) {
+            if (element.style.display !== 'none') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Fetch user data on page load
+        window.onload = async () => {
+            try {
+                console.log('Fetching user data...');
+                const response = await fetch('http://localhost:5001/api/auth/check', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch user data: ${response.status}`);
+                }
+                const user = await response.json();
+                console.log('User data:', user);
+                
+                // Update DOM with user data
+                document.getElementById('full-name').textContent = user.fullName || 'No Name';
+                document.getElementById('email').textContent = user.email || 'No Email';
+                document.getElementById('user-id').textContent = `ID: ${user._id || 'No ID'}`;
+                
+                // Handle profile picture
+                const profilePic = document.getElementById('profile-pic');
+                if (user.profilePic) {
+                    profilePic.src = user.profilePic;
+                    profilePic.style.display = 'block';
+                } else {
+                    profilePic.src = 'https://via.placeholder.com/100?text=No+Image';
+                    profilePic.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error);
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Error loading profile: ' + error.message;
+                errorMessage.style.display = 'block';
+                hideNotification(errorMessage);
+            }
+        };
+
+        // Trigger file input on image click
+        document.getElementById('profile-pic').addEventListener('click', () => {
+            document.getElementById('profile-pic-upload').click();
+        });
+
+        // Upload profile picture
+        async function uploadProfilePic() {
+            console.log('File selected, uploading...');
+            const fileInput = document.getElementById('profile-pic-upload');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            const profilePic = document.getElementById('profile-pic');
+            const spinner = document.getElementById('spinner');
+
+            if (!fileInput.files[0]) {
+                console.warn('No file selected');
+                errorMessage.textContent = 'Please select an image to upload';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                hideNotification(errorMessage);
+                return;
+            }
+
+            try {
+                console.log('Reading file...');
+                const file = fileInput.files[0];
+                // Validate file size (2MB limit)
+                if (file.size > 2 * 1024 * 1024) {
+                    throw new Error('Image size exceeds 2MB limit');
+                }
+                
+                // Show spinner
+                spinner.style.display = 'flex';
+
+                const reader = new FileReader();
+                
+                reader.onload = async () => {
+                    const base64Image = reader.result;
+                    console.log('Base64 image length:', base64Image.length);
+
+                    try {
+                        console.log('Sending update-profile request...');
+                        const response = await fetch('http://localhost:5001/api/auth/update-profile', {
+                            method: 'PUT',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ profilePic: base64Image })
+                        });
+
+                        // Hide spinner
+                        spinner.style.display = 'none';
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            console.error('Update profile error:', errorData);
+                            throw new Error(errorData.message || `Failed to upload profile picture: ${response.status}`);
+                        }
+
+                        const updatedUser = await response.json();
+                        console.log('Updated user:', updatedUser);
+
+                        // Update profile picture in DOM
+                        if (updatedUser.profilePic) {
+                            profilePic.src = updatedUser.profilePic;
+                            profilePic.style.display = 'block';
+                        }
+                        successMessage.style.display = 'block';
+                        successMessage.textContent = 'Profile picture updated successfully!';
+                        errorMessage.style.display = 'none';
+                        hideNotification(successMessage);
+                        fileInput.value = ''; // Clear file input
+                    } catch (error) {
+                        console.error('Upload request error:', error);
+                        spinner.style.display = 'none';
+                        errorMessage.textContent = 'Error uploading picture: ' + error.message;
+                        errorMessage.style.display = 'block';
+                        successMessage.style.display = 'none';
+                        hideNotification(errorMessage);
+                    }
+                };
+
+                reader.onerror = () => {
+                    console.error('FileReader error');
+                    spinner.style.display = 'none';
+                    errorMessage.textContent = 'Error reading image file';
+                    errorMessage.style.display = 'block';
+                    successMessage.style.display = 'none';
+                    hideNotification(errorMessage);
+                };
+
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('Upload setup error:', error);
+                spinner.style.display = 'none';
+                errorMessage.textContent = 'Error uploading picture: ' + error.message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                hideNotification(errorMessage);
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            console.log('Logout button clicked');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            try {
+                const response = await fetch('http://localhost:5001/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new Error(`Logout failed: ${response.status}`);
+                }
+                console.log('Logout successful, redirecting...');
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                errorMessage.textContent = 'Error logging out: ' + error.message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                hideNotification(errorMessage);
+            }
+        }
+    </script>
 </body>
 </html>

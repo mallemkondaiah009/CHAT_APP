@@ -1,15 +1,586 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
-  <link rel="stylesheet" href="/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            max-width: none;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .sidebar {
+            width: 30%;
+            border-right: 1px solid #ddd;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .current-user {
+            display: flex;
+            align-items: center;
+            border: 2px solid #0084ff;
+            border-radius: 10px;
+            padding: 8px;
+            cursor: pointer;
+        }
+        .current-user-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+        .current-user-name {
+            font-size: 1.1em;
+            color: #333;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #0084ff;
+            border-radius: 20px;
+            outline: none;
+        }
+        .user-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+            height: calc(100% - 120px);
+        }
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .user-item:hover {
+            background: #f0f2f5;
+        }
+        .user-item.active {
+            background: #e3f2fd;
+        }
+        .user-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .user-name {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+        .last-message {
+            font-size: 0.9em;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+        .chat-area {
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-user-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .chat-user-name {
+            font-size: 1.2em;
+            color: #333;
+        }
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            max-width: 60%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            line-height: 1.4;
+        }
+        .message.sent {
+            background: #0084ff;
+            color: white;
+            align-self: flex-end;
+        }
+        .message.received {
+            background: #e5e5ea;
+            align-self: flex-start;
+        }
+        .message img {
+            max-width: 100%;
+            border-radius: 10px;
+            display: block;
+        }
+        .message-timestamp {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .message-form {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .message-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        .image-upload-button {
+            padding: 10px;
+            background: #0084ff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .image-upload-button:hover {
+            background: #0066cc;
+        }
+        .image-input {
+            display: none;
+        }
+        .send-button {
+            padding: 10px 20px;
+            background: #0084ff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .send-button:hover {
+            background: #0066cc;
+        }
+        .no-user {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+        .image-preview {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .image-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            object-fit: contain;
+        }
+        .image-preview-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .cancel-button {
+            padding: 10px 20px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .cancel-button:hover {
+            background: #cc0000;
+        }
+    </style>
 </head>
 <body>
-  <h1>Welcome to the Home Page</h1>
-  <nav>
-    <a href="/login">Login</a> | <a href="/signup">Signup</a> | <a href="/profile">Profile</a>
-  </nav>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header" id="sidebarHeader"></div>
+            <ul class="user-list" id="userList"></ul>
+        </div>
+        <div class="chat-area" id="chatArea">
+            <div class="no-user">Select a user to start chatting</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5001/api';
+        let currentUserId = null;
+        let senderId = null;
+        let currentUser = null;
+        let allUsers = [];
+        let selectedImage = null;
+
+        // Fetch senderId and current user info from auth/check API
+        async function fetchSenderId() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/check`);
+                if (!response.ok) throw new Error(`Auth check failed: ${response.status}`);
+                const data = await response.json();
+                if (!data._id) throw new Error('No user ID in auth response');
+                senderId = data._id;
+                currentUser = {
+                    fullName: data.fullName || 'Current User',
+                    profilePic: data.profilePic || 'https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg'
+                };
+                const sidebarHeader = document.getElementById('sidebarHeader');
+                sidebarHeader.innerHTML = `
+                    <div class="current-user" id="currentUser">
+                        <img src="${currentUser.profilePic}" alt="${currentUser.fullName}" class="current-user-pic">
+                        <span class="current-user-name">${currentUser.fullName}</span>
+                    </div>
+                    <input type="text" class="search-bar" id="searchBar" placeholder="Search users...">
+                `;
+                document.getElementById('currentUser').addEventListener('click', () => {
+                    window.location.href = '/profile';
+                });
+                document.getElementById('searchBar').addEventListener('input', filterUsers);
+            } catch (error) {
+                console.error('Error fetching senderId:', error);
+                senderId = null;
+                currentUser = {
+                    fullName: 'Unknown User',
+                    profilePic: 'https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg'
+                };
+                alert('Failed to authenticate user. Sending messages will be disabled.');
+                const sidebarHeader = document.getElementById('sidebarHeader');
+                sidebarHeader.innerHTML = `
+                    <div class="current-user" id="currentUser">
+                        <img src="${currentUser.profilePic}" alt="${currentUser.fullName}" class="current-user-pic">
+                        <span class="current-user-name">${currentUser.fullName}</span>
+                    </div>
+                    <input type="text" class="search-bar" id="searchBar" placeholder="Search users...">
+                `;
+                document.getElementById('currentUser').addEventListener('click', () => {
+                    window.location.href = '/profile';
+                });
+                document.getElementById('searchBar').addEventListener('input', filterUsers);
+            }
+        }
+
+        // Fetch and display all users with last message
+        async function fetchUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/message/users`);
+                if (!response.ok) throw new Error(`Failed to fetch users: ${response.status}`);
+                allUsers = await response.json();
+                if (!Array.isArray(allUsers)) throw new Error('Users response is not an array');
+                for (let user of allUsers) {
+                    user.lastMessage = await fetchLastMessage(user._id);
+                }
+                renderUsers(allUsers);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                alert('Failed to load users. Please try again later.');
+            }
+        }
+
+        // Fetch the last message for a user
+        async function fetchLastMessage(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/message/${userId}`);
+                if (!response.ok) return null;
+                const messages = await response.json();
+                if (!Array.isArray(messages) || messages.length === 0) return null;
+                return messages[messages.length - 1];
+            } catch (error) {
+                console.error(`Error fetching last message for user ${userId}:`, error);
+                return null;
+            }
+        }
+
+        // Render users with last message
+        function renderUsers(users) {
+            const userList = document.getElementById('userList');
+            if (!userList) return;
+            userList.innerHTML = '';
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.className = 'user-item';
+                li.dataset.userId = user._id || '';
+                const lastMessageText = user.lastMessage 
+                    ? user.lastMessage.image 
+                        ? 'Image' 
+                        : user.lastMessage.text?.substring(0, 50) || ''
+                    : 'No messages yet';
+                li.innerHTML = `
+                    <img src="${user.profilePic || 'https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg'}" alt="${user.fullName || 'User'}" class="user-pic">
+                    <div class="user-info">
+                        <span class="user-name">${user.fullName || 'Unknown User'}</span>
+                        <span class="last-message">${lastMessageText}</span>
+                    </div>
+                `;
+                li.classList.toggle('active', user._id === currentUserId);
+                li.addEventListener('click', () => selectUser(user._id, user.fullName, user.profilePic));
+                userList.appendChild(li);
+            });
+        }
+
+        // Filter users based on search input
+        function filterUsers() {
+            const searchBar = document.getElementById('searchBar');
+            if (!searchBar) return;
+            const searchTerm = searchBar.value.toLowerCase();
+            const filteredUsers = allUsers.filter(user => 
+                (user.fullName || '').toLowerCase().includes(searchTerm)
+            );
+            renderUsers(filteredUsers);
+        }
+
+        // Select a user and load their messages
+        async function selectUser(userId, fullName, profilePic) {
+            if (!userId) return;
+            currentUserId = userId;
+            localStorage.setItem('selectedUserId', userId); // Persist user ID
+            selectedImage = null;
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.userId === userId);
+            });
+
+            const chatArea = document.getElementById('chatArea');
+            if (!chatArea) return;
+            chatArea.innerHTML = `
+                <div class="chat-header">
+                    <img src="${profilePic || 'https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg'}" alt="${fullName || 'User'}" class="chat-user-pic">
+                    <span class="chat-user-name">${fullName || 'User'}</span>
+                </div>
+                <div class="messages" id="messages"></div>
+                <form class="message-form" id="messageForm">
+                    <div class="image-preview" id="imagePreview">
+                        <img id="previewImage" src="" alt="Image preview">
+                        <div class="image-preview-buttons">
+                            <button type="button" class="send-button" id="sendImageButton">Send</button>
+                            <button type="button" class="cancel-button" id="cancelImageButton">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="message-input-container">
+                        <input type="text" class="message-input" id="messageInput" placeholder="Type a message...">
+                        <button type="button" class="image-upload-button" id="imageUploadButton">📎</button>
+                        <input type="file" class="image-input" id="imageInput" accept="image/*">
+                        <button type="submit" class="send-button">Send</button>
+                    </div>
+                </form>
+            `;
+
+            const messageForm = document.getElementById('messageForm');
+            const imageUploadButton = document.getElementById('imageUploadButton');
+            const imageInput = document.getElementById('imageInput');
+            const sendImageButton = document.getElementById('sendImageButton');
+            const cancelImageButton = document.getElementById('cancelImageButton');
+            const imagePreview = document.getElementById('imagePreview');
+
+            if (messageForm) {
+                messageForm.addEventListener('submit', e => sendMessage(e, false));
+            }
+            if (imageUploadButton && imageInput) {
+                imageUploadButton.addEventListener('click', () => imageInput.click());
+                imageInput.addEventListener('change', handleImageSelection);
+            }
+            if (sendImageButton) {
+                sendImageButton.addEventListener('click', e => sendMessage(e, true));
+            }
+            if (cancelImageButton) {
+                cancelImageButton.addEventListener('click', () => {
+                    selectedImage = null;
+                    imageInput.value = '';
+                    imagePreview.style.display = 'none';
+                });
+            }
+
+            await fetchMessages(userId);
+        }
+
+        // Handle image selection and preview
+        function handleImageSelection() {
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImage = document.getElementById('previewImage');
+
+            if (imageInput.files && imageInput.files.length > 0) {
+                const file = imageInput.files[0];
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file.');
+                    imageInput.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => {
+                    selectedImage = reader.result;
+                    previewImage.src = selectedImage;
+                    imagePreview.style.display = 'flex';
+                };
+                reader.onerror = () => {
+                    alert('Failed to read image.');
+                    imageInput.value = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Fetch messages for a user
+        async function fetchMessages(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/message/${userId}`);
+                if (!response.ok) throw new Error(`Failed to fetch messages: ${response.status}`);
+                const messages = await response.json();
+                if (!Array.isArray(messages)) throw new Error('Messages response is not an array');
+                console.log('Fetched messages:', messages);
+                const messagesDiv = document.getElementById('messages');
+                if (!messagesDiv) return;
+                messagesDiv.innerHTML = '';
+                messages.forEach(msg => {
+                    if (!msg.senderId || (!msg.text && !msg.image)) return;
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.senderId === senderId ? 'sent' : 'received'}`;
+                    let content = msg.text || '';
+                    if (msg.image) {
+                        content += `<img src="${msg.image}" alt="Sent image" onerror="this.src='https://via.placeholder.com/150?text=Image+Failed'; console.error('Failed to load image:', '${msg.image}')">`;
+                    }
+                    div.innerHTML = `
+                        ${content}
+                        <div class="message-timestamp">${new Date(msg.createdAt || Date.now()).toLocaleTimeString()}</div>
+                    `;
+                    messagesDiv.appendChild(div);
+                });
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+                alert('Failed to load messages. Please try again.');
+            }
+        }
+
+        // Send a text or image message
+        async function sendMessage(e, isImage = false) {
+            if (e) e.preventDefault();
+            if (!senderId) {
+                alert('Cannot send message: User not authenticated.');
+                return;
+            }
+            const messageInput = document.getElementById('messageInput');
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+            if (!currentUserId) {
+                alert('No user selected.');
+                return;
+            }
+
+            let body = {};
+            let hasContent = false;
+
+            if (!isImage && messageInput && messageInput.value.trim()) {
+                body.text = messageInput.value.trim();
+                hasContent = true;
+            }
+
+            if (isImage && selectedImage) {
+                body.image = selectedImage;
+                hasContent = true;
+            }
+
+            if (!hasContent) {
+                alert('No message or image to send.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/message/send/${currentUserId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Failed to send message: ${errorData.message || response.status}`);
+                }
+                if (messageInput && !isImage) messageInput.value = '';
+                if (imageInput && isImage) imageInput.value = '';
+                if (isImage) {
+                    selectedImage = null;
+                    imagePreview.style.display = 'none';
+                }
+                await fetchMessages(currentUserId);
+                await fetchUsers();
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert(`Failed to send message: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        async function init() {
+            await fetchSenderId();
+            await fetchUsers();
+            // Restore selected user from localStorage
+            const storedUserId = localStorage.getItem('selectedUserId');
+            if (storedUserId) {
+                const user = allUsers.find(u => u._id === storedUserId);
+                if (user) {
+                    await selectUser(user._id, user.fullName, user.profilePic);
+                } else {
+                    localStorage.removeItem('selectedUserId'); // Clear invalid ID
+                }
+            }
+        }
+        init();
+    </script>
 </body>
 </html>

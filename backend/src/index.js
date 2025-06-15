@@ -6,6 +6,7 @@ import { connectDB } from './lib/db.js';
 import authRoutes from './routes/auth.route.js';
 import messageRoutes from './routes/message.route.js';
 import { fileURLToPath } from 'url';
+import  bodyParser from 'body-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,6 +17,10 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
+// Increase JSON payload limit to 10MB
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Set EJS as the template engine
 app.set('view engine', 'ejs');
@@ -42,7 +47,6 @@ app.get('/signup', (req, res) => {
 app.get('/profile', (req, res) => {
   res.render('profile');
 });
-
 
 
 
