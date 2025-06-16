@@ -178,7 +178,7 @@
         window.onload = async () => {
             try {
                 console.log('Fetching user data...');
-                const response = await fetch('http://localhost:5001/api/auth/check', {
+                const response = await fetch('https://judas-dsaj.onrender.com/api/auth/check', {
                     method: 'GET',
                     credentials: 'include'
                 });
@@ -246,7 +246,7 @@
 
                     try {
                         console.log('Sending update-profile request...');
-                        const response = await fetch('http://localhost:5001/api/auth/update-profile', {
+                        const response = await fetch('https://judas-dsaj.onrender.com/api/auth/update-profile', {
                             method: 'PUT',
                             credentials: 'include',
                             headers: { 'Content-Type': 'application/json' },
@@ -298,7 +298,7 @@
             console.log('Logout button clicked');
             const errorMessage = document.getElementById('error-message');
             try {
-                const response = await fetch('http://localhost:5001/api/auth/logout', {
+                const response = await fetch('https://judas-dsaj.onrender.com/api/auth/logout', {
                     method: 'POST',
                     credentials: 'include'
                 });

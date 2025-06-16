@@ -744,7 +744,7 @@
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script>
-        const API_BASE = "http://localhost:5001/api";
+        const API_BASE = "https://judas-dsaj.onrender.com/api";
         let currentUserId = null;
         let senderId = null;
         let currentUser = null;
@@ -755,7 +755,7 @@
 
         // Initialize Socket.IO
         function initializeSocket() {
-            socket = io("http://localhost:5001", {
+            socket = io("https://judas-dsaj.onrender.com", {
                 query: { userId: senderId },
                 transports: ["websocket"],
             });

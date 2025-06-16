@@ -473,7 +473,7 @@
                 let response, data;
                 for (const payload of payloads) {
                     console.log('Trying payload:', payload);
-                    response = await fetch('http://localhost:5001/api/auth/signup', {
+                    response = await fetch('https://judas-dsaj.onrender.com/api/auth/signup', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
