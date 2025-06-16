@@ -60,6 +60,9 @@
             display: flex;
             list-style: none;
             gap: 2rem;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .nav-links a {
@@ -71,48 +74,6 @@
 
         .nav-links a:hover {
             color: #8B5CF6;
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .login-button {
-            background: transparent;
-            color: #8B5CF6;
-            padding: 0.5rem 1rem;
-            border: 2px solid #8B5CF6;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .login-button:hover {
-            background: #8B5CF6;
-            color: white;
-        }
-
-        .signup-button {
-            background: linear-gradient(135deg, #8B5CF6, #A78BFA);
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .signup-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
         }
 
         /* Hero Section */
@@ -477,22 +438,23 @@
             }
 
             .nav-links {
-                display: none;
+                display: flex;
+                gap: 1rem;
+                position: static;
+                transform: none;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-links a {
+                font-size: 0.9rem;
             }
 
             .stats {
                 justify-content: center;
             }
 
-            .hero-buttons {
-                justify-content: center;
-            }
-
-            .auth-buttons {
-                gap: 0.5rem;
-            }
-
-            .login-button, .signup-button {
+            .send-button {
                 padding: 0.4rem 0.8rem;
                 font-size: 0.9rem;
             }
@@ -552,10 +514,6 @@
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
-            <div class="auth-buttons">
-                <a href="/login" class="login-button">Login</a>
-                <a href="/signup" class="signup-button">Signup</a>
-            </div>
         </nav>
     </header>
 
@@ -567,7 +525,7 @@
                     <h1>Connect Instantly with Judas</h1>
                     <p>Experience real-time messaging like never before. Share media, see who's online, and stay connected with crystal-clear communication.</p>
                     <div class="hero-buttons">
-                        <a href="/signup" class="btn-primary">Get Started</a>
+                        <a href="#" class="btn-primary" onclick="checkAuth()">Get Started</a>
                     </div>
                     <div class="stats">
                         <div class="stat">
@@ -720,11 +678,36 @@
                     <a href="#">Privacy Policy</a>
                 </div>
             </div>
-            <p>&copy; 2024 Judas. All rights reserved. Made with 💜 for better communication.</p>
+            <p>© 2024 Judas. All rights reserved. Made with 💜 for better communication.</p>
         </div>
     </footer>
 
     <script>
+        // Authentication check using API
+        async function checkAuth() {
+            try {
+                const response = await fetch('http://localhost:5001/api/auth/check', {
+                    method: 'GET',
+                    credentials: 'include' // Include cookies for session-based auth
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data._id) {
+                        window.location.href = '/home'; // Redirect to home page if user has an ID
+                    } else {
+                        window.location.href = '/signup'; // Redirect to signup page if no user ID
+                    }
+                } else {
+                    console.error('Auth check failed:', response.status);
+                    window.location.href = '/signup'; // Fallback to signup on error
+                }
+            } catch (error) {
+                console.error('Error checking auth:', error);
+                window.location.href = '/signup'; // Fallback to signup on network error
+            }
+        }
+
         // Active users counter animation
         function animateCounter() {
             const counter = document.getElementById('activeUsers');

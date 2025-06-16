@@ -6,101 +6,172 @@
     <title>User Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
         .profile-pic-container {
             position: relative;
             display: inline-block;
         }
+
         .pencil-icon {
             position: absolute;
-            top: 0;
-            right: 0;
-            background-color: rgba(0, 0, 0, 0.6);
+            top: -4px;
+            right: -4px;
+            background: linear-gradient(45deg, #3b82f6, #60a5fa);
             border-radius: 50%;
-            padding: 8px;
+            padding: 6px;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
+
         .profile-pic-container:hover .pencil-icon {
             opacity: 1;
+            transform: scale(1.1);
         }
+
         .profile-pic {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
         .profile-pic:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
+
         .notification {
-            position: absolute;
-            top: 0;
+            position: fixed;
+            top: 16px;
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
-            max-width: 400px;
-            z-index: 10;
-            transition: opacity 0.3s ease;
+            max-width: 380px;
+            z-index: 1000;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .notification.hidden {
+            transform: translateX(-50%) translateY(-20px);
+            opacity: 0;
+        }
+
         .spinner-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 20;
+            z-index: 2000;
+            transition: opacity 0.3s ease;
         }
+
         .spinner {
-            border: 8px solid rgba(255, 255, 255, 0.3);
-            border-top: 8px solid #ffffff;
+            border: 6px solid rgba(255, 255, 255, 0.3);
+            border-top: 6px solid #3b82f6;
             border-radius: 50%;
-            width: 64px;
-            height: 64px;
-            animation: spin 1s linear infinite;
+            width: 48px;
+            height: 48px;
+            animation: spin 0.8s linear infinite;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .btn {
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3b82f6, #60a5fa);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #2563eb, #3b82f6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #ef4444, #f87171);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(45deg, #dc2626, #ef4444);
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="container max-w-md mx-auto p-6">
-        <div class="profile-card bg-white rounded-2xl shadow-lg p-8 text-center transform transition-all duration-300 hover:shadow-xl relative">
-            <div id="notification-container" class="notification">
-                <p id="error-message" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hidden"></p>
-                <p id="success-message" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm hidden"></p>
+<body class="min-h-screen flex items-center justify-center">
+    <div class="container max-w-lg mx-auto p-6">
+        <div class="profile-card bg-white rounded-3xl shadow-xl p-10 text-center relative">
+            <div id="notification-container" class="notification hidden">
+                <p id="error-message" class="bg-red-600 text-white px-5 py-3 rounded-xl text-sm shadow-md hidden"></p>
+                <p id="success-message" class="bg-green-600 text-white px-5 py-3 rounded-xl text-sm shadow-md hidden"></p>
             </div>
             <div id="spinner" class="spinner-container hidden">
                 <div class="spinner"></div>
             </div>
             <div class="profile-pic-container">
-                <img id="profile-pic" src="" alt="Profile Picture" class="profile-pic w-24 h-24 rounded-full object-cover mb-4 mx-auto" style="display: none;">
-                <svg id="pencil-icon" class="pencil-icon w-6 h-6 text-white cursor-pointer" onclick="document.getElementById('profile-pic-upload').click()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <img id="profile-pic" src="" alt="Profile Picture" class="profile-pic w-28 h-28 rounded-full object-cover mb-6 mx-auto" style="display: none;">
+                <svg id="pencil-icon" class="pencil-icon w-5 h-5 text-white cursor-pointer" onclick="document.getElementById('profile-pic-upload').click()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
             </div>
-            <h2 id="full-name" class="text-2xl font-semibold text-gray-800 mb-2">Loading...</h2>
-            <p id="email" class="text-gray-600 mb-1">Loading...</p>
-            <p id="user-id" class="text-gray-500 text-sm mb-4">Loading...</p>
+            <h2 id="full-name" class="text-3xl font-bold text-gray-900 mb-3">Loading...</h2>
+            <p id="email" class="text-gray-600 text-lg mb-8">Loading...</p>
             <input type="file" id="profile-pic-upload" accept="image/*" class="hidden" onchange="uploadProfilePic()">
-            <div class="flex justify-center">
-                <button onclick="logout()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200">Logout</button>
+            <div class="flex justify-center gap-4">
+                <a href="/home" class="btn btn-primary text-white px-8 py-3 rounded-xl">Back to Home</a>
+                <button onclick="logout()" class="btn btn-secondary text-white px-8 py-3 rounded-xl">Logout</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Function to hide notifications after 5 seconds
-        function hideNotification(element) {
-            if (element.style.display !== 'none') {
-                setTimeout(() => {
-                    element.style.display = 'none';
-                }, 5000);
-            }
+        // Function to show and hide notifications
+        function showNotification(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+            element.parentElement.classList.remove('hidden');
+            element.parentElement.classList.add('show');
+            setTimeout(() => {
+                element.parentElement.classList.remove('show');
+                element.parentElement.classList.add('hidden');
+                element.style.display = 'none';
+            }, 5000);
         }
 
         // Fetch user data on page load
@@ -120,7 +191,6 @@
                 // Update DOM with user data
                 document.getElementById('full-name').textContent = user.fullName || 'No Name';
                 document.getElementById('email').textContent = user.email || 'No Email';
-                document.getElementById('user-id').textContent = `ID: ${user._id || 'No ID'}`;
                 
                 // Handle profile picture
                 const profilePic = document.getElementById('profile-pic');
@@ -133,10 +203,7 @@
                 }
             } catch (error) {
                 console.error('Error fetching user:', error);
-                const errorMessage = document.getElementById('error-message');
-                errorMessage.textContent = 'Error loading profile: ' + error.message;
-                errorMessage.style.display = 'block';
-                hideNotification(errorMessage);
+                showNotification(document.getElementById('error-message'), 'Error loading profile: ' + error.message);
             }
         };
 
@@ -156,10 +223,7 @@
 
             if (!fileInput.files[0]) {
                 console.warn('No file selected');
-                errorMessage.textContent = 'Please select an image to upload';
-                errorMessage.style.display = 'block';
-                successMessage.style.display = 'none';
-                hideNotification(errorMessage);
+                showNotification(errorMessage, 'Please select an image to upload');
                 return;
             }
 
@@ -206,38 +270,26 @@
                             profilePic.src = updatedUser.profilePic;
                             profilePic.style.display = 'block';
                         }
-                        successMessage.style.display = 'block';
-                        successMessage.textContent = 'Profile picture updated successfully!';
-                        errorMessage.style.display = 'none';
-                        hideNotification(successMessage);
+                        showNotification(successMessage, 'Profile picture updated successfully!');
                         fileInput.value = ''; // Clear file input
                     } catch (error) {
                         console.error('Upload request error:', error);
                         spinner.style.display = 'none';
-                        errorMessage.textContent = 'Error uploading picture: ' + error.message;
-                        errorMessage.style.display = 'block';
-                        successMessage.style.display = 'none';
-                        hideNotification(errorMessage);
+                        showNotification(errorMessage, 'Error uploading picture: ' + error.message);
                     }
                 };
 
                 reader.onerror = () => {
                     console.error('FileReader error');
                     spinner.style.display = 'none';
-                    errorMessage.textContent = 'Error reading image file';
-                    errorMessage.style.display = 'block';
-                    successMessage.style.display = 'none';
-                    hideNotification(errorMessage);
+                    showNotification(errorMessage, 'Error reading image file');
                 };
 
                 reader.readAsDataURL(file);
             } catch (error) {
                 console.error('Upload setup error:', error);
                 spinner.style.display = 'none';
-                errorMessage.textContent = 'Error uploading picture: ' + error.message;
-                errorMessage.style.display = 'block';
-                successMessage.style.display = 'none';
-                hideNotification(errorMessage);
+                showNotification(errorMessage, 'Error uploading picture: ' + error.message);
             }
         }
 
@@ -245,7 +297,6 @@
         async function logout() {
             console.log('Logout button clicked');
             const errorMessage = document.getElementById('error-message');
-            const successMessage = document.getElementById('success-message');
             try {
                 const response = await fetch('http://localhost:5001/api/auth/logout', {
                     method: 'POST',
@@ -258,10 +309,7 @@
                 window.location.href = '/login';
             } catch (error) {
                 console.error('Logout error:', error);
-                errorMessage.textContent = 'Error logging out: ' + error.message;
-                errorMessage.style.display = 'block';
-                successMessage.style.display = 'none';
-                hideNotification(errorMessage);
+                showNotification(errorMessage, 'Error logging out: ' + error.message);
             }
         }
     </script>
