@@ -8,15 +8,24 @@ import messageRoutes from './routes/message.route.js';
 import { fileURLToPath } from 'url';
 import  bodyParser from 'body-parser';
 
+import cors from "cors";
+import { app, server } from "./lib/socket.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
 dotenv.config();
 
-const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 // Increase JSON payload limit to 10MB
 app.use(bodyParser.json({ limit: '10mb' }));
@@ -50,7 +59,7 @@ app.get('/profile', (req, res) => {
 
 
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log('Server is running on http://localhost:5001');
     connectDB();
 });
