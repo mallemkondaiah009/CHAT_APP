@@ -18,6 +18,8 @@
             --primary-700: #4338ca;
             --primary-50: #eef2ff;
             --primary-100: #e0e7ff;
+            --primary-200: #c7d2fe;
+            --primary-300: #a5b4fc;
             --gray-50: #f9fafb;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
@@ -275,6 +277,22 @@
             color: var(--primary-500);
         }
 
+        .unread-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 6px;
+            background: var(--primary-500);
+            color: var(--white);
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 10px;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+
         .chat-area {
             flex: 1;
             display: flex;
@@ -292,6 +310,26 @@
             gap: 12px;
             min-height: 68px;
             flex-shrink: 0;
+            position: relative;
+        }
+
+        .back-button {
+            display: none;
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--gray-100);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--gray-600);
+            transition: all 0.2s ease;
+            margin-right: 8px;
+        }
+
+        .back-button:hover {
+            background: var(--gray-200);
+            transform: translateX(-2px);
         }
 
         .chat-user-pic {
@@ -325,7 +363,7 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: var(--green-500);
+            background: var(--gray-400);
         }
 
         .messages {
@@ -545,57 +583,112 @@
             border-color: var(--red-500);
         }
 
-        /* Mobile Responsive Design */
         @media (max-width: 768px) {
             .container {
                 height: 100vh;
+                position: relative;
             }
             
             .sidebar {
                 width: 100%;
                 position: absolute;
                 z-index: 10;
-                transform: translateX(-100%);
                 transition: transform 0.3s ease;
-                box-shadow: var(--shadow-lg);
+                box-shadow: none;
+                border-right: none;
             }
             
-            .sidebar.open {
-                transform: translateX(0);
+            .sidebar.hide-mobile {
+                transform: translateX(-100%);
             }
             
             .chat-area {
                 width: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 5;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .chat-area.show-mobile {
+                transform: translateX(0);
             }
 
-            .mobile-menu-button {
-                display: block;
-                position: absolute;
-                top: 16px;
-                left: 16px;
-                z-index: 20;
-                width: 40px;
-                height: 40px;
-                background: var(--white);
-                border: 1px solid var(--gray-200);
-                border-radius: 8px;
-                cursor: pointer;
+            .back-button {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 18px;
-                color: var(--gray-600);
-                box-shadow: var(--shadow-sm);
+            }
+
+            .chat-header {
+                padding: 12px 16px;
+            }
+
+            .chat-user-pic {
+                width: 32px;
+                height: 32px;
+            }
+
+            .chat-user-name {
+                font-size: 15px;
+            }
+
+            .messages {
+                padding: 12px 16px;
+            }
+
+            .message-form {
+                padding: 12px 16px;
+            }
+
+            .message {
+                max-width: 85%;
+                font-size: 13px;
+            }
+
+            .sidebar-header {
+                padding: 16px;
+            }
+
+            .current-user-pic {
+                width: 28px;
+                height: 28px;
+            }
+
+            .current-user-name {
+                font-size: 13px;
+            }
+
+            .user-list {
+                padding: 8px 12px;
+            }
+
+            .user-item {
+                padding: 12px 8px;
+            }
+
+            .user-pic {
+                width: 36px;
+                height: 36px;
+            }
+
+            .user-name {
+                font-size: 14px;
+            }
+
+            .last-message {
+                font-size: 12px;
+            }
+
+            .unread-count {
+                font-size: 9px;
+                min-width: 16px;
+                height: 16px;
             }
         }
 
-        @media (min-width: 769px) {
-            .mobile-menu-button {
-                display: none;
-            }
-        }
-
-        /* Loading Animation */
         .loading {
             display: inline-block;
             width: 16px;
@@ -610,17 +703,16 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Smooth transitions */
         * {
             transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
             transition-duration: 150ms;
         }
 
-        /* Additional Styles for Real-Time Features */
         .message.sent .message-timestamp span {
             margin-left: 4px;
         }
+
         .typing-indicator {
             font-style: italic;
             color: var(--gray-500);
@@ -630,7 +722,6 @@
 </head>
 <body>
     <div class="container">
-        <button class="mobile-menu-button" id="mobileMenuButton">☰</button>
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header" id="sidebarHeader">
                 <div class="app-logo">
@@ -650,523 +741,592 @@
     </div>
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<script>
-  const API_BASE = "http://localhost:5001/api";
-  let currentUserId = null;
-  let senderId = null;
-  let currentUser = null;
-  let allUsers = [];
-  let selectedImage = null;
-  let socket = null;
+    <script>
+        const API_BASE = "http://localhost:5001/api";
+        let currentUserId = null;
+        let senderId = null;
+        let currentUser = null;
+        let allUsers = [];
+        let selectedImage = null;
+        let socket = null;
+        let isMobile = window.innerWidth <= 768;
 
-  // Initialize Socket.IO
-  function initializeSocket() {
-    socket = io("http://localhost:5001", {
-      query: { userId: senderId },
-      transports: ["websocket"],
-    });
+        // Initialize Socket.IO
+        function initializeSocket() {
+            socket = io("http://localhost:5001", {
+                query: { userId: senderId },
+                transports: ["websocket"],
+            });
 
-    socket.on("connect", () => {
-      console.log("Connected to Socket.IO server");
-    });
+            socket.on("connect", () => {
+                console.log("Connected to Socket.IO server");
+            });
 
-    socket.on("getOnlineUsers", (onlineUsers) => {
-      updateUserStatus(onlineUsers);
-    });
+            socket.on("getOnlineUsers", (onlineUsers) => {
+                updateUserStatus(onlineUsers);
+            });
 
-    socket.on("newMessage", (message) => {
-      if (message.senderId === currentUserId || message.receiverId === senderId) {
-        appendMessage(message);
-        fetchUsers(); // Update last message in user list
-      }
-    });
+            socket.on("newMessage", (message) => {
+                if (message.senderId === currentUserId || message.receiverId === senderId) {
+                    appendMessage(message);
+                    // Update user list: move sender to top and update unread count
+                    const userId = message.senderId === senderId ? message.receiverId : message.senderId;
+                    const user = allUsers.find(u => u._id === userId);
+                    if (user) {
+                        // Update last message
+                        user.lastMessage = message;
+                        // Increment unread count if chat is not open
+                        if (userId !== currentUserId) {
+                            user.unreadCount = (user.unreadCount || 0) + 1;
+                        }
+                        // Move user to top
+                        allUsers = [user, ...allUsers.filter(u => u._id !== userId)];
+                        renderUsers(allUsers);
+                    } else {
+                        // Fetch users if sender is not in list (new conversation)
+                        fetchUsers();
+                    }
+                }
+            });
 
-    socket.on("typing", ({ senderId }) => {
-      if (senderId === currentUserId) {
-        showTypingIndicator();
-      }
-    });
+            socket.on("typing", ({ senderId }) => {
+                if (senderId === currentUserId) {
+                    showTypingIndicator();
+                }
+            });
 
-    socket.on("stopTyping", ({ senderId }) => {
-      if (senderId === currentUserId) {
-        hideTypingIndicator();
-      }
-    });
+            socket.on("stopTyping", ({ senderId }) => {
+                if (senderId === currentUserId) {
+                    hideTypingIndicator();
+                }
+            });
 
-    socket.on("messageRead", ({ messageId }) => {
-      updateMessageReadStatus(messageId);
-    });
+            socket.on("messageRead", ({ messageId }) => {
+                updateMessageReadStatus(messageId);
+                // Refresh user list to update unread counts
+                fetchUsers();
+            });
 
-    socket.on("connect_error", (error) => {
-      console.error("Socket.IO connection error:", error);
-    });
-  }
-
-  // Mobile menu functionality
-  const mobileMenuButton = document.getElementById("mobileMenuButton");
-  const sidebar = document.getElementById("sidebar");
-
-  if (mobileMenuButton && sidebar) {
-    mobileMenuButton.addEventListener("click", () => {
-      sidebar.classList.toggle("open");
-    });
-
-    document.addEventListener("click", (e) => {
-      if (
-        window.innerWidth <= 768 &&
-        !sidebar.contains(e.target) &&
-        !mobileMenuButton.contains(e.target) &&
-        sidebar.classList.contains("open")
-      ) {
-        sidebar.classList.remove("open");
-      }
-    });
-  }
-
-  // Fetch senderId and current user info
-  async function fetchSenderId() {
-    try {
-      const response = await fetch(`${API_BASE}/auth/check`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error(`Auth check failed: ${response.status}`);
-      const data = await response.json();
-      if (!data._id) throw new Error("No user ID in auth response");
-      senderId = data._id;
-      currentUser = {
-        fullName: data.fullName || "Current User",
-        profilePic:
-          data.profilePic ||
-          "https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg",
-      };
-      const sidebarHeader = document.getElementById("sidebarHeader");
-      sidebarHeader.innerHTML = `
-        <div class="app-logo">
-          <div class="logo-icon">J</div>
-          <div class="app-title">Judas</div>
-        </div>
-        <div class="current-user" id="currentUser">
-          <img src="${currentUser.profilePic}" alt="${currentUser.fullName}" class="current-user-pic">
-          <span class="current-user-name">${currentUser.fullName}</span>
-          <div class="current-user-status"></div>
-        </div>
-        <input type="text" class="search-bar" id="searchBar" placeholder="Search conversations...">
-      `;
-      document.getElementById("currentUser").addEventListener("click", () => {
-        window.location.href = "/profile";
-      });
-      document.getElementById("searchBar").addEventListener("input", filterUsers);
-      initializeSocket(); // Initialize Socket.IO after getting senderId
-    } catch (error) {
-      console.error("Error fetching senderId:", error);
-      alert("Failed to authenticate user. Please log in again.");
-      window.location.href = "/login";
-    }
-  }
-
-  // Update user online/offline status
-  function updateUserStatus(onlineUsers) {
-    const userItems = document.querySelectorAll(".user-item");
-    userItems.forEach((item) => {
-      const userId = item.dataset.userId;
-      const statusDot = item.querySelector(".current-user-status") || document.createElement("div");
-      statusDot.className = "current-user-status";
-      if (onlineUsers.includes(userId)) {
-        statusDot.style.backgroundColor = "var(--green-500)";
-      } else {
-        statusDot.style.backgroundColor = "var(--gray-400)";
-      }
-      if (!item.querySelector(".current-user-status")) {
-        item.querySelector(".user-info").appendChild(statusDot);
-      }
-    });
-    if (currentUserId && onlineUsers.includes(currentUserId)) {
-      const chatStatus = document.querySelector(".chat-user-status span");
-      if (chatStatus) chatStatus.textContent = "Online";
-    } else {
-      const chatStatus = document.querySelector(".chat-user-status span");
-      if (chatStatus) chatStatus.textContent = "Offline";
-    }
-  }
-
-  // Show typing indicator
-  function showTypingIndicator() {
-    const messagesDiv = document.getElementById("messages");
-    if (!messagesDiv) return;
-    let typingDiv = messagesDiv.querySelector(".typing-indicator");
-    if (!typingDiv) {
-      typingDiv = document.createElement("div");
-      typingDiv.className = "message received typing-indicator";
-      typingDiv.textContent = "Typing...";
-      messagesDiv.appendChild(typingDiv);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-  }
-
-  // Hide typing indicator
-  function hideTypingIndicator() {
-    const typingDiv = document.querySelector(".typing-indicator");
-    if (typingDiv) typingDiv.remove();
-  }
-
-  // Update message read status
-  function updateMessageReadStatus(messageId) {
-    const messageDiv = document.querySelector(`.message[data-message-id="${messageId}"]`);
-    if (messageDiv && messageDiv.classList.contains("sent")) {
-      const readIndicator = document.createElement("span");
-      readIndicator.textContent = " ✓✓";
-      readIndicator.style.color = "var(--blue-500)";
-      messageDiv.querySelector(".message-timestamp").appendChild(readIndicator);
-    }
-  }
-
-  // Fetch and display all users with last message
-  async function fetchUsers() {
-    try {
-      const response = await fetch(`${API_BASE}/message/users`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error(`Failed to fetch users: ${response.status}`);
-      allUsers = await response.json();
-      if (!Array.isArray(allUsers)) throw new Error("Users response is not an array");
-      for (let user of allUsers) {
-        user.lastMessage = await fetchLastMessage(user._id);
-      }
-      renderUsers(allUsers);
-      // Removed: socket.emit("getOnlineUsers", Object.keys(userSocketMap));
-      // Server already emits getOnlineUsers on connection/disconnection
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      alert("Failed to load users. Please try again later.");
-    }
-  }
-
-  // Fetch the last message for a user
-  async function fetchLastMessage(userId) {
-    try {
-      const response = await fetch(`${API_BASE}/message/${userId}`, {
-        credentials: "include",
-      });
-      if (!response.ok) return null;
-      const messages = await response.json();
-      if (!Array.isArray(messages) || messages.length === 0) return null;
-      return messages[messages.length - 1];
-    } catch (error) {
-      console.error(`Error fetching last message for user ${userId}:`, error);
-      return null;
-    }
-  }
-
-  // Format time for display
-  function formatTime(dateString) {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = (now - date) / (1000 * 60 * 60);
-
-    if (diffInHours < 24) {
-      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    } else if (diffInHours < 168) {
-      return date.toLocaleDateString([], { weekday: "short" });
-    } else {
-      return date.toLocaleDateString([], { month: "short", day: "numeric" });
-    }
-  }
-
-  // Render users with last message
-  function renderUsers(users) {
-    const userList = document.getElementById("userList");
-    if (!userList) return;
-    userList.innerHTML = "";
-    users.forEach((user) => {
-      const li = document.createElement("li");
-      li.className = "user-item";
-      li.dataset.userId = user._id || "";
-      const lastMessageText = user.lastMessage
-        ? user.lastMessage.image
-          ? "📷 Photo"
-          : user.lastMessage.text?.substring(0, 35) || ""
-        : "No messages yet";
-      const messageTime = user.lastMessage ? formatTime(user.lastMessage.createdAt) : "";
-
-      li.innerHTML = `
-        <img src="${user.profilePic || 'https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg'}" alt="${user.fullName || 'User'}" class="user-pic">
-        <div class="user-info">
-          <span class="user-name">${user.fullName || "Unknown User"}</span>
-          <span class="last-message">${lastMessageText}</span>
-        </div>
-        <span class="message-time">${messageTime}</span>
-      `;
-      li.classList.toggle("active", user._id === currentUserId);
-      li.addEventListener("click", () => {
-        selectUser(user._id, user.fullName, user.profilePic);
-        if (window.innerWidth <= 768) {
-          sidebar.classList.remove("open");
+            socket.on("connect_error", (error) => {
+                console.error("Socket.IO connection error:", error);
+            });
         }
-      });
-      userList.appendChild(li);
-    });
-  }
 
-  // Filter users based on search input
-  function filterUsers() {
-    const searchBar = document.getElementById("searchBar");
-    if (!searchBar) return;
-    const searchTerm = searchBar.value.toLowerCase();
-    const filteredUsers = allUsers.filter((user) =>
-      (user.fullName || "").toLowerCase().includes(searchTerm)
-    );
-    renderUsers(filteredUsers);
-  }
-
-  // Select a user and load their messages
-  async function selectUser(userId, fullName, profilePic) {
-    if (!userId) return;
-    currentUserId = userId;
-    localStorage.setItem("selectedUserId", userId);
-    selectedImage = null;
-    document.querySelectorAll(".user-item").forEach((item) => {
-      item.classList.toggle("active", item.dataset.userId === userId);
-    });
-
-    const chatArea = document.getElementById("chatArea");
-    if (!chatArea) return;
-    chatArea.innerHTML = `
-      <div class="chat-header">
-        <img src="${profilePic || 'https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg'}" alt="${fullName || 'User'}" class="chat-user-pic">
-        <div class="chat-user-info">
-          <div class="chat-user-name">${fullName || "User"}</div>
-          <div class="chat-user-status">
-            <div class="status-dot"></div>
-            <span>Status</span>
-          </div>
-        </div>
-      </div>
-      <div class="messages" id="messages"></div>
-      <form class="message-form" id="messageForm">
-        <div class="image-preview" id="imagePreview">
-          <img id="previewImage" src="" alt="Image preview">
-          <div class="image-preview-buttons">
-            <button type="button" class="action-button send-button" id="sendImageButton">Send</button>
-            <button type="button" class="action-button cancel-button" id="cancelImageButton">✕</button>
-          </div>
-        </div>
-        <div class="message-input-container">
-          <input type="text" class="message-input" id="messageInput" placeholder="Type your message...">
-          <button type="button" class="action-button image-upload-button" id="imageUploadButton">📎</button>
-          <input type="file" class="image-input" id="imageInput" accept="image/*">
-          <button type="submit" class="action-button send-button">➤</button>
-        </div>
-      </form>
-    `;
-
-    const messageForm = document.getElementById("messageForm");
-    const imageUploadButton = document.getElementById("imageUploadButton");
-    const imageInput = document.getElementById("imageInput");
-    const sendImageButton = document.getElementById("sendImageButton");
-    const cancelImageButton = document.getElementById("cancelImageButton");
-    const imagePreview = document.getElementById("imagePreview");
-    const messageInput = document.getElementById("messageInput");
-
-    if (messageForm) {
-      messageForm.addEventListener("submit", (e) => sendMessage(e, false));
-    }
-    if (imageUploadButton && imageInput) {
-      imageUploadButton.addEventListener("click", () => imageInput.click());
-      imageInput.addEventListener("change", handleImageSelection);
-    }
-    if (sendImageButton) {
-      sendImageButton.addEventListener("click", (e) => sendMessage(e, true));
-    }
-    if (cancelImageButton) {
-      cancelImageButton.addEventListener("click", () => {
-        selectedImage = null;
-        imageInput.value = "";
-        imagePreview.style.display = "none";
-      });
-    }
-
-    // Typing indicator logic
-    let typingTimeout = null;
-    if (messageInput) {
-      messageInput.addEventListener("input", () => {
-        socket.emit("typing", { receiverId: currentUserId });
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => {
-          socket.emit("stopTyping", { receiverId: currentUserId });
-        }, 1000);
-      });
-    }
-
-    await fetchMessages(userId);
-    // Mark messages as read when chat is opened
-    markMessagesAsRead(userId);
-  }
-
-  // Handle image selection and preview
-  function handleImageSelection() {
-    const imageInput = document.getElementById("imageInput");
-    const imagePreview = document.getElementById("imagePreview");
-    const previewImage = document.getElementById("previewImage");
-
-    if (imageInput.files && imageInput.files.length > 0) {
-      const file = imageInput.files[0];
-      if (!file.type.startsWith("image/")) {
-        alert("Please select an image file.");
-        imageInput.value = "";
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        selectedImage = reader.result;
-        previewImage.src = selectedImage;
-        imagePreview.style.display = "flex";
-      };
-      reader.onerror = () => {
-        alert("Failed to read image.");
-        imageInput.value = "";
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  // Fetch messages for a user
-  async function fetchMessages(userId) {
-    try {
-      const response = await fetch(`${API_BASE}/message/${userId}`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error(`Failed to fetch messages: ${response.status}`);
-      const messages = await response.json();
-      if (!Array.isArray(messages)) throw new Error("Messages response is not an array");
-      const messagesDiv = document.getElementById("messages");
-      if (!messagesDiv) return;
-      messagesDiv.innerHTML = "";
-      messages.forEach((msg) => {
-        if (!msg.senderId || (!msg.text && !msg.image)) return;
-        appendMessage(msg);
-      });
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      alert("Failed to load messages. Please try again.");
-    }
-  }
-
-  // Append a single message
-  function appendMessage(msg) {
-    const messagesDiv = document.getElementById("messages");
-    if (!messagesDiv) return;
-    const div = document.createElement("div");
-    div.className = `message ${msg.senderId === senderId ? "sent" : "received"}`;
-    div.dataset.messageId = msg._id;
-    let content = msg.text || "";
-    if (msg.image) {
-      content += `<img src="${msg.image}" alt="Sent image" onerror="this.src='https://via.placeholder.com/150?text=Image+Failed'; console.error('Failed to load image:', '${msg.image}')">`;
-    }
-    let readStatus = "";
-    if (msg.senderId === senderId && msg.read) {
-      readStatus = `<span style="color: var(--blue-500);"> ✓✓</span>`;
-    }
-    div.innerHTML = `
-      ${content}
-      <div class="message-timestamp">${new Date(msg.createdAt || Date.now()).toLocaleTimeString()}${readStatus}</div>
-    `;
-    messagesDiv.appendChild(div);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
-
-  // Mark messages as read
-  async function markMessagesAsRead(userId) {
-    try {
-      const response = await fetch(`${API_BASE}/message/${userId}`, {
-        credentials: "include",
-      });
-      if (!response.ok) return;
-      const messages = await response.json();
-      for (const msg of messages) {
-        if (msg.senderId === userId && !msg.read) {
-          socket.emit("markAsRead", { messageId: msg._id, receiverId: senderId });
+        // Mobile navigation functions
+        function showChatOnMobile() {
+            if (!isMobile) return;
+            const sidebar = document.getElementById("sidebar");
+            const chatArea = document.getElementById("chatArea");
+            sidebar.classList.add("hide-mobile");
+            chatArea.classList.add("show-mobile");
         }
-      }
-    } catch (error) {
-      console.error("Error marking messages as read:", error);
-    }
-  }
 
-  // Send a text or image message
-  async function sendMessage(e, isImage = false) {
-    if (e) e.preventDefault();
-    if (!senderId) {
-      alert("Cannot send message: User not authenticated.");
-      return;
-    }
-    const messageInput = document.getElementById("messageInput");
-    const imageInput = document.getElementById("imageInput");
-    const imagePreview = document.getElementById("imagePreview");
-    if (!currentUserId) {
-      alert("No user selected.");
-      return;
-    }
+        function showSidebarOnMobile() {
+            if (!isMobile) return;
+            const sidebar = document.getElementById("sidebar");
+            const chatArea = document.getElementById("chatArea");
+            sidebar.classList.remove("hide-mobile");
+            chatArea.classList.remove("show-mobile");
+        }
 
-    let body = {};
-    let hasContent = false;
+        // Handle window resize
+        window.addEventListener("resize", () => {
+            const wasMobile = isMobile;
+            isMobile = window.innerWidth <= 768;
+            if (wasMobile && !isMobile) {
+                const sidebar = document.getElementById("sidebar");
+                const chatArea = document.getElementById("chatArea");
+                sidebar.classList.remove("hide-mobile");
+                chatArea.classList.remove("show-mobile");
+            }
+        });
 
-    if (!isImage && messageInput && messageInput.value.trim()) {
-      body.text = messageInput.value.trim();
-      hasContent = true;
-    }
+        // Fetch senderId and current user info
+        async function fetchSenderId() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/check`, {
+                    credentials: "include",
+                });
+                if (!response.ok) throw new Error(`Auth check failed: ${response.status}`);
+                const data = await response.json();
+                if (!data._id) throw new Error("No user ID in auth response");
+                senderId = data._id;
+                currentUser = {
+                    fullName: data.fullName || "Current User",
+                    profilePic:
+                        data.profilePic ||
+                        "https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg",
+                };
+                const sidebarHeader = document.getElementById("sidebarHeader");
+                sidebarHeader.innerHTML = `
+                    <div class="app-logo">
+                        <div class="logo-icon">J</div>
+                        <div class="app-title">Judas</div>
+                    </div>
+                    <div class="current-user" id="currentUser">
+                        <img src="${currentUser.profilePic}" alt="${currentUser.fullName}" class="current-user-pic">
+                        <span class="current-user-name">${currentUser.fullName}</span>
+                        <div class="current-user-status"></div>
+                    </div>
+                    <input type="text" class="search-bar" id="searchBar" placeholder="Search conversations...">
+                `;
+                document.getElementById("currentUser").addEventListener("click", () => {
+                    window.location.href = "/profile";
+                });
+                document.getElementById("searchBar").addEventListener("input", filterUsers);
+                initializeSocket();
+                await fetchUsers();
+            } catch (error) {
+                console.error("Error fetching senderId:", error);
+                alert("Failed to authenticate user. Please log in again.");
+                window.location.href = "/login";
+            }
+        }
 
-    if (isImage && selectedImage) {
-      body.image = selectedImage;
-      hasContent = true;
-    }
+        // Update user online/offline status
+        function updateUserStatus(onlineUsers) {
+            console.log("Updating online users:", onlineUsers);
+            const userItems = document.querySelectorAll(".user-item");
+            userItems.forEach((item) => {
+                const userId = item.dataset.userId;
+                const statusDot = item.querySelector(".current-user-status") || document.createElement("div");
+                statusDot.className = "current-user-status";
+                statusDot.style.backgroundColor = onlineUsers.includes(userId) ? "var(--green-500)" : "var(--gray-400)";
+                if (!item.querySelector(".current-user-status")) {
+                    item.querySelector(".user-info").appendChild(statusDot);
+                }
+            });
 
-    if (!hasContent) {
-      alert("No message or image to send.");
-      return;
-    }
+            if (currentUserId) {
+                const chatStatus = document.querySelector(".chat-user-status span");
+                const statusDot = document.querySelector(".status-dot");
+                if (chatStatus && statusDot) {
+                    if (onlineUsers.includes(currentUserId)) {
+                        chatStatus.textContent = "Online";
+                        statusDot.style.backgroundColor = "var(--green-500)";
+                    } else {
+                        chatStatus.textContent = "Offline";
+                        statusDot.style.backgroundColor = "var(--gray-400)";
+                    }
+                }
+            }
+        }
 
-    try {
-      const response = await fetch(`${API_BASE}/message/send/${currentUserId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        credentials: "include",
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Failed to send message: ${errorData.message || response.status}`);
-      }
-      if (messageInput && !isImage) messageInput.value = "";
-      if (imageInput && isImage) imageInput.value = "";
-      if (isImage) {
-        selectedImage = null;
-        imagePreview.style.display = "none";
-      }
-      await fetchMessages(currentUserId);
-      await fetchUsers();
-    } catch (error) {
-      console.error("Error sending message:", error);
-      alert(`Failed to send message: ${error.message}`);
-    }
-  }
+        // Show typing indicator
+        function showTypingIndicator() {
+            const messagesDiv = document.getElementById("messages");
+            if (!messagesDiv) return;
+            let typingDiv = messagesDiv.querySelector(".typing-indicator");
+            if (!typingDiv) {
+                typingDiv = document.createElement("div");
+                typingDiv.className = "message received typing-indicator";
+                typingDiv.textContent = "Typing...";
+                messagesDiv.appendChild(typingDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        }
 
-  // Initialize
-  async function init() {
-    await fetchSenderId();
-    await fetchUsers();
-    const storedUserId = localStorage.getItem("selectedUserId");
-    if (storedUserId) {
-      const user = allUsers.find((u) => u._id === storedUserId);
-      if (user) {
-        await selectUser(user._id, user.fullName, user.profilePic);
-      } else {
-        localStorage.removeItem("selectedUserId");
-      }
-    }
-  }
-  init();
-</script>
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const typingDiv = document.querySelector(".typing-indicator");
+            if (typingDiv) typingDiv.remove();
+        }
+
+        // Update message read status
+        function updateMessageReadStatus(messageId) {
+            const messageDiv = document.querySelector(`.message[data-message-id="${messageId}"]`);
+            if (messageDiv && messageDiv.classList.contains("sent")) {
+                const readIndicator = document.createElement("span");
+                readIndicator.textContent = " ✓✓";
+                readIndicator.style.color = "var(--blue-500)";
+                messageDiv.querySelector(".message-timestamp").appendChild(readIndicator);
+            }
+        }
+
+        // Fetch and display all users with last message and unread count
+        async function fetchUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/message/users`, {
+                    credentials: "include",
+                });
+                if (!response.ok) throw new Error(`Failed to fetch users: ${response.status}`);
+                allUsers = await response.json();
+                if (!Array.isArray(allUsers)) throw new Error("Users response is not an array");
+                for (let user of allUsers) {
+                    const messages = await fetchMessagesForUser(user._id);
+                    user.lastMessage = messages && messages.length > 0 ? messages[messages.length - 1] : null;
+                    user.unreadCount = messages ? messages.filter(msg => msg.senderId === user._id && !msg.read).length : 0;
+                }
+                // Sort users by last message timestamp (newest first)
+                allUsers.sort((a, b) => {
+                    const aTime = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
+                    const bTime = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
+                    return bTime - aTime;
+                });
+                renderUsers(allUsers);
+                socket.emit("getOnlineUsersRequest");
+            } catch (error) {
+                console.error("Error fetching users:", error);
+                alert("Failed to load users. Please try again later.");
+            }
+        }
+
+        // Fetch messages for a user (for unread count and last message)
+        async function fetchMessagesForUser(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/message/${userId}`, {
+                    credentials: "include",
+                });
+                if (!response.ok) return null;
+                const messages = await response.json();
+                if (!Array.isArray(messages)) return null;
+                return messages;
+            } catch (error) {
+                console.error(`Error fetching messages for user ${userId}:`, error);
+                return null;
+            }
+        }
+
+        // Format time for display
+        function formatTime(dateString) {
+            if (!dateString) return "";
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInHours = (now - date) / (1000 * 60 * 60);
+
+            if (diffInHours < 24) {
+                return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            } else if (diffInHours < 168) {
+                return date.toLocaleDateString([], { weekday: "short" });
+            } else {
+                return date.toLocaleDateString([], { month: "short", day: "numeric" });
+            }
+        }
+
+        // Render users with last message and unread count
+        function renderUsers(users) {
+            const userList = document.getElementById("userList");
+            if (!userList) return;
+            userList.innerHTML = "";
+            users.forEach((user) => {
+                const li = document.createElement("li");
+                li.className = "user-item";
+                li.dataset.userId = user._id || "";
+                const lastMessageText = user.lastMessage
+                    ? user.lastMessage.image
+                        ? "📷 Photo"
+                        : user.lastMessage.text?.substring(0, 35) || ""
+                    : "No messages yet";
+                const messageTime = user.lastMessage ? formatTime(user.lastMessage.createdAt) : "";
+                const unreadCount = user.unreadCount || 0;
+
+                li.innerHTML = `
+                    <img src="${user.profilePic || 'https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg'}" alt="${user.fullName || 'User'}" class="user-pic">
+                    <div class="user-info">
+                        <span class="user-name">${user.fullName || "Unknown User"}</span>
+                        <span class="last-message">${lastMessageText}</span>
+                    </div>
+                    <span class="message-time">${messageTime}</span>
+                    ${unreadCount > 0 ? `<span class="unread-count">${unreadCount}</span>` : ""}
+                `;
+                li.classList.toggle("active", user._id === currentUserId);
+                li.addEventListener("click", () => {
+                    selectUser(user._id, user.fullName, user.profilePic);
+                    showChatOnMobile();
+                });
+                userList.appendChild(li);
+            });
+        }
+
+        // Filter users based on search input
+        function filterUsers() {
+            const searchBar = document.getElementById("searchBar");
+            if (!searchBar) return;
+            const searchTerm = searchBar.value.toLowerCase();
+            const filteredUsers = allUsers.filter((user) =>
+                (user.fullName || "").toLowerCase().includes(searchTerm)
+            );
+            renderUsers(filteredUsers);
+        }
+
+        // Select a user and load their messages
+        async function selectUser(userId, fullName, profilePic) {
+            if (!userId) return;
+            currentUserId = userId;
+            localStorage.setItem("selectedUserId", userId);
+            selectedImage = null;
+            document.querySelectorAll(".user-item").forEach((item) => {
+                item.classList.toggle("active", item.dataset.userId === userId);
+            });
+
+            const chatArea = document.getElementById("chatArea");
+            if (!chatArea) return;
+            chatArea.innerHTML = `
+                <div class="chat-header">
+                    <button class="back-button" id="backButton">←</button>
+                    <img src="${profilePic || 'https://res.cloudinary.com/di0icte7g/image/upload/v1749980985/default_user_ok8ioh.jpg'}" alt="${fullName || 'User'}" class="chat-user-pic">
+                    <div class="chat-user-info">
+                        <div class="chat-user-name">${fullName || "User"}</div>
+                        <div class="chat-user-status">
+                            <div class="status-dot"></div>
+                            <span>Checking status...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="messages" id="messages"></div>
+                <form class="message-form" id="messageForm">
+                    <div class="image-preview" id="imagePreview">
+                        <img id="previewImage" src="" alt="Image preview">
+                        <div class="image-preview-buttons">
+                            <button type="button" class="action-button send-button" id="sendImageButton">Send</button>
+                            <button type="button" class="action-button cancel-button" id="cancelImageButton">✕</button>
+                        </div>
+                    </div>
+                    <div class="message-input-container">
+                        <input type="text" class="message-input" id="messageInput" placeholder="Type your message...">
+                        <button type="button" class="action-button image-upload-button" id="imageUploadButton">📎</button>
+                        <input type="file" class="image-input" id="imageInput" accept="image/*">
+                        <button type="submit" class="action-button send-button">➤</button>
+                    </div>
+                </form>
+            `;
+
+            const backButton = document.getElementById("backButton");
+            if (backButton) {
+                backButton.addEventListener("click", () => {
+                    showSidebarOnMobile();
+                });
+            }
+
+            const messageForm = document.getElementById("messageForm");
+            const imageUploadButton = document.getElementById("imageUploadButton");
+            const imageInput = document.getElementById("imageInput");
+            const sendImageButton = document.getElementById("sendImageButton");
+            const cancelImageButton = document.getElementById("cancelImageButton");
+            const imagePreview = document.getElementById("imagePreview");
+            const messageInput = document.getElementById("messageInput");
+
+            if (messageForm) {
+                messageForm.addEventListener("submit", (e) => sendMessage(e, false));
+            }
+            if (imageUploadButton && imageInput) {
+                imageUploadButton.addEventListener("click", () => imageInput.click());
+                imageInput.addEventListener("change", handleImageSelection);
+            }
+            if (sendImageButton) {
+                sendImageButton.addEventListener("click", (e) => sendMessage(e, true));
+            }
+            if (cancelImageButton) {
+                cancelImageButton.addEventListener("click", () => {
+                    selectedImage = null;
+                    imageInput.value = "";
+                    imagePreview.style.display = "none";
+                });
+            }
+
+            let typingTimeout = null;
+            if (messageInput) {
+                messageInput.addEventListener("input", () => {
+                    socket.emit("typing", { receiverId: currentUserId });
+                    clearTimeout(typingTimeout);
+                    typingTimeout = setTimeout(() => {
+                        socket.emit("stopTyping", { receiverId: currentUserId });
+                    }, 1000);
+                });
+            }
+
+            await fetchMessages(userId);
+            await markMessagesAsRead(userId);
+            socket.emit("getOnlineUsersRequest");
+        }
+
+        // Handle image selection and preview
+        function handleImageSelection() {
+            const imageInput = document.getElementById("imageInput");
+            const imagePreview = document.getElementById("imagePreview");
+            const previewImage = document.getElementById("previewImage");
+
+            if (imageInput.files && imageInput.files.length > 0) {
+                const file = imageInput.files[0];
+                if (!file.type.startsWith("image/")) {
+                    alert("Please select an image file.");
+                    imageInput.value = "";
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => {
+                    selectedImage = reader.result;
+                    previewImage.src = selectedImage;
+                    imagePreview.style.display = "flex";
+                };
+                reader.onerror = () => {
+                    alert("Failed to read image.");
+                    imageInput.value = "";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Fetch messages for a user
+        async function fetchMessages(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/message/${userId}`, {
+                    credentials: "include",
+                });
+                if (!response.ok) throw new Error(`Failed to fetch messages: ${response.status}`);
+                const messages = await response.json();
+                if (!Array.isArray(messages)) throw new Error("Messages response is not an array");
+                const messagesDiv = document.getElementById("messages");
+                if (!messagesDiv) return;
+                messagesDiv.innerHTML = "";
+                messages.forEach((msg) => {
+                    if (!msg.senderId || (!msg.text && !msg.image)) return;
+                    appendMessage(msg);
+                });
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+                alert("Failed to load messages. Please try again.");
+            }
+        }
+
+        // Append a single message
+        function appendMessage(msg) {
+            const messagesDiv = document.getElementById("messages");
+            if (!messagesDiv) return;
+            const div = document.createElement("div");
+            div.className = `message ${msg.senderId === senderId ? "sent" : "received"}`;
+            div.dataset.messageId = msg._id;
+            let content = msg.text || "";
+            if (msg.image) {
+                content += `<img src="${msg.image}" alt="Sent image" onerror="this.src='https://via.placeholder.com/150?text=Image+Failed'; console.error('Failed to load image:', '${msg.image}')">`;
+            }
+            let readStatus = "";
+            if (msg.senderId === senderId && msg.read) {
+                readStatus = `<span style="color: var(--blue-500);"> ✓✓</span>`;
+            }
+            div.innerHTML = `
+                ${content}
+                <div class="message-timestamp">${new Date(msg.createdAt || Date.now()).toLocaleTimeString()}${readStatus}</div>
+            `;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Mark messages as read and update unread count
+        async function markMessagesAsRead(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/message/${userId}`, {
+                    credentials: "include",
+                });
+                if (!response.ok) throw new Error(`Failed to fetch messages: ${response.status}`);
+                const messages = await response.json();
+                if (!Array.isArray(messages)) throw new Error("Messages response is not an array");
+                
+                // Mark unread messages as read
+                const unreadMessages = messages.filter(msg => msg.senderId === userId && !msg.read);
+                if (unreadMessages.length > 0) {
+                    for (const msg of unreadMessages) {
+                        socket.emit("markAsRead", { messageId: msg._id, receiverId: senderId });
+                    }
+                    // Update unread count in allUsers
+                    const user = allUsers.find(u => u._id === userId);
+                    if (user) {
+                        user.unreadCount = 0;
+                        renderUsers(allUsers);
+                    }
+                }
+            } catch (error) {
+                console.error("Error marking messages as read:", error);
+            }
+        }
+
+        // Send a text or image message
+        async function sendMessage(e, isImage = false) {
+            if (e) e.preventDefault();
+            if (!senderId) {
+                alert("Cannot send message: User not authenticated.");
+                return;
+            }
+            const messageInput = document.getElementById("messageInput");
+            const imageInput = document.getElementById("imageInput");
+            const imagePreview = document.getElementById("imagePreview");
+            if (!currentUserId) {
+                alert("No user selected.");
+                return;
+            }
+
+            let body = {};
+            let hasContent = false;
+
+            if (!isImage && messageInput && messageInput.value.trim()) {
+                body.text = messageInput.value.trim();
+                hasContent = true;
+            }
+
+            if (isImage && selectedImage) {
+                body.image = selectedImage;
+                hasContent = true;
+            }
+
+            if (!hasContent) {
+                alert("No message or image to send.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/message/send/${currentUserId}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                    credentials: "include",
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Failed to send message: ${errorData.message || response.status}`);
+                }
+                if (messageInput && !isImage) messageInput.value = "";
+                if (imageInput && isImage) imageInput.value = "";
+                if (isImage) {
+                    selectedImage = null;
+                    imagePreview.style.display = "none";
+                }
+                await fetchMessages(currentUserId);
+                // Move receiver to top of user list
+                const user = allUsers.find(u => u._id === currentUserId);
+                if (user) {
+                    user.lastMessage = {
+                        text: body.text,
+                        image: body.image,
+                        createdAt: new Date().toISOString(),
+                        senderId: senderId,
+                    };
+                    allUsers = [user, ...allUsers.filter(u => u._id !== currentUserId)];
+                    renderUsers(allUsers);
+                }
+            } catch (error) {
+                console.error("Error sending message:", error);
+                alert(`Failed to send message: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        async function init() {
+            await fetchSenderId();
+            if (isMobile) {
+                showSidebarOnMobile();
+            }
+            const storedUserId = localStorage.getItem("selectedUserId");
+            if (storedUserId && !isMobile) {
+                const user = allUsers.find((u) => u._id === storedUserId);
+                if (user) {
+                    await selectUser(user._id, user.fullName, user.profilePic);
+                } else {
+                    localStorage.removeItem("selectedUserId");
+                }
+            }
+        }
+        init();
+    </script>
 </body>
 </html>

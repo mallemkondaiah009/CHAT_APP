@@ -3,112 +3,434 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Form</title>
+    <title>Login - Join Judas - Professional Chat Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
         .notification {
-            animation: fadeIn 0.3s ease-in, fadeOut 0.3s ease-out 4.7s;
+            animation: slideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                       slideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 4.6s;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        @keyframes slideDown {
+            from { 
+                opacity: 0; 
+                transform: translateY(-30px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
         }
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-10px); }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+            to { 
+                opacity: 0; 
+                transform: translateY(-30px) scale(0.95); 
+            }
+        }
+
+        .feature-icon {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .feature-item:hover .feature-icon {
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .floating-label {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            pointer-events: none;
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .form-input:focus + .floating-label,
+        .form-input:not(:placeholder-shown) + .floating-label {
+            top: 8px;
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .form-input {
+            padding: 20px 16px 8px 16px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .error-shake {
+            animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @media (max-width: 768px) {
+            .split-container {
+                flex-direction: column;
+            }
+            
+            .left-panel {
+                min-height: 40vh;
+                padding: 2rem 1rem;
+            }
+            
+            .right-panel {
+                padding: 2rem 1rem;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div id="notification-container" class="fixed top-4 z-50 w-full flex justify-center">
-        <div id="error-message" class="text-red-500 bg-white p-4 rounded-md shadow-md hidden max-w-sm flex items-center"></div>
-        <div id="success-message" class="text-green-500 bg-white p-4 rounded-md shadow-md hidden max-w-sm flex items-center">
-            <span class="inline-block w-6 h-6 bg-green-500 text-white rounded-full text-center mr-2">✔</span>
-            <span>Login successful! Redirecting...</span>
+<body class="min-h-screen bg-gray-50">
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div id="error-message" class="hidden bg-white rounded-xl shadow-2xl p-4 max-w-sm border-l-4 border-red-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-red-800" id="error-text"></p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="success-message" class="hidden bg-white rounded-xl shadow-2xl p-4 max-w-sm border-l-4 border-green-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-green-800" id="success-text">Login successful! Redirecting...</p>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
-        <form id="loginForm">
-            <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" id="email" name="email" class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <div id="email-error" class="text-red-500 text-sm mt-1 hidden"></div>
+
+    <!-- Main Container -->
+    <div class="split-container flex min-h-screen">
+        <!-- Left Panel - Branding -->
+        <div class="left-panel gradient-bg flex-1 flex flex-col justify-center items-center p-12 relative overflow-hidden">
+            <!-- Background Decoration -->
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-10 left-10 w-32 h-32 bg-white rounded-full"></div>
+                <div class="absolute bottom-10 right-10 w-24 h-24 bg-white rounded-full"></div>
+                <div class="absolute top-1/2 left-20 w-16 h-16 bg-white rounded-full"></div>
             </div>
-            <div class="mb-6">
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" id="password" name="password" class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <div id="password-error" class="text-red-500 text-sm mt-1 hidden"></div>
+
+            <div class="relative z-10 text-center max-w-md">
+                <!-- Logo -->
+                <div class="mb-8">
+                    <h1 class="logo-text text-6xl font-bold mb-4">Judas</h1>
+                    <p class="text-white/90 text-lg font-light">Welcome Back</p>
+                </div>
+
+                <!-- Features -->
+                <div class="space-y-6 mb-8">
+                    <div class="feature-item flex items-center text-white/90 hover:text-white transition-colors">
+                        <div class="feature-icon w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Instant Messaging</h3>
+                            <p class="text-sm text-white/70">Continue your conversations</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item flex items-center text-white/90 hover:text-white transition-colors">
+                        <div class="feature-icon w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Team Collaboration</h3>
+                            <p class="text-sm text-white/70">Connect with your team</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item flex items-center text-white/90 hover:text-white transition-colors">
+                        <div class="feature-icon w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-green-400 rounded-full pulse-dot"></div>
+                                <div class="w-2 h-2 bg-white/60 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Real-time Updates</h3>
+                            <p class="text-sm text-white/70">Stay connected always</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-white/60 text-sm">
+                    Secure and reliable communication platform
+                </div>
             </div>
-            <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Login</button>
-        </form>
-        <p class="mt-4 text-center text-sm text-gray-600">
-            Don't have an account? 
-            <a href="/signup/" class="text-blue-500 hover:text-blue-700 underline">Sign Up</a>
-        </p>
+        </div>
+
+        <!-- Right Panel - Login Form -->
+        <div class="right-panel flex-1 flex items-center justify-center p-12 bg-gray-50">
+            <div class="w-full max-w-md">
+                <div class="glass-effect rounded-2xl p-8 shadow-2xl">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                        <p class="text-gray-600">Sign in to continue your conversations</p>
+                    </div>
+
+                    <form id="loginForm" class="space-y-6">
+                        <!-- Email -->
+                        <div class="input-group">
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                class="form-input w-full border border-gray-200 rounded-xl bg-white/70 placeholder-transparent focus:outline-none" 
+                                placeholder="Email Address"
+                                required
+                            >
+                            <label for="email" class="floating-label">Email Address</label>
+                            <div id="email-error" class="text-red-500 text-sm mt-2 hidden flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <span id="email-error-text"></span>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="input-group">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                class="form-input w-full border border-gray-200 rounded-xl bg-white/70 placeholder-transparent focus:outline-none" 
+                                placeholder="Password"
+                                required
+                            >
+                            <label for="password" class="floating-label">Password</label>
+                            <div id="password-error" class="text-red-500 text-sm mt-2 hidden flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <span id="password-error-text"></span>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button 
+                            type="submit" 
+                            id="submitBtn"
+                            class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span id="btn-text">Sign In</span>
+                            <span id="btn-loader" class="hidden">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Signing In...
+                            </span>
+                        </button>
+                    </form>
+
+                    <!-- Signup Link -->
+                    <div class="text-center mt-8 pt-6 border-t border-gray-200">
+                        <p class="text-gray-600">
+                            Don't have an account? 
+                            <a href="/signup" class="font-semibold text-blue-600 hover:text-blue-700 transition-colors">Create account</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         const form = document.getElementById('loginForm');
         const errorMessage = document.getElementById('error-message');
         const successMessage = document.getElementById('success-message');
+        const errorText = document.getElementById('error-text');
+        const successText = document.getElementById('success-text');
         const emailError = document.getElementById('email-error');
         const passwordError = document.getElementById('password-error');
+        const emailErrorText = document.getElementById('email-error-text');
+        const passwordErrorText = document.getElementById('password-error-text');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoader = document.getElementById('btn-loader');
 
         let notificationTimeout = null;
 
-        function showNotification(element, message) {
+        function showNotification(element, textElement, message) {
             if (notificationTimeout) {
                 clearTimeout(notificationTimeout);
             }
+            
+            // Hide all notifications first
             errorMessage.classList.add('hidden');
             successMessage.classList.add('hidden');
-            element.textContent = '';
-            element.innerHTML = `<span class="inline-block w-6 h-6 bg-${element === successMessage ? 'green' : 'red'}-500 text-white rounded-full text-center mr-2">✔</span><span>${message}</span>`;
+            
+            // Set message and show notification
+            textElement.textContent = message;
             element.classList.remove('hidden');
             element.classList.add('notification');
+            
             notificationTimeout = setTimeout(() => {
                 element.classList.add('hidden');
                 element.classList.remove('notification');
-                element.textContent = '';
             }, 5000);
         }
+
+        function setLoading(loading) {
+            if (loading) {
+                submitBtn.disabled = true;
+                btnText.classList.add('hidden');
+                btnLoader.classList.remove('hidden');
+            } else {
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            }
+        }
+
+        function showFieldError(errorElement, textElement, inputElement, message) {
+            textElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            inputElement.classList.add('border-red-500', 'error-shake');
+            setTimeout(() => {
+                inputElement.classList.remove('error-shake');
+            }, 500);
+        }
+
+        function clearFieldError(errorElement, inputElement) {
+            errorElement.classList.add('hidden');
+            inputElement.classList.remove('border-red-500');
+        }
+
+        // Clear errors on input
+        emailInput.addEventListener('input', () => clearFieldError(emailError, emailInput));
+        passwordInput.addEventListener('input', () => clearFieldError(passwordError, passwordInput));
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Reset styles and messages
-            emailInput.classList.remove('border-red-500');
-            passwordInput.classList.remove('border-red-500');
-            emailError.classList.add('hidden');
-            passwordError.classList.add('hidden');
+            // Reset all error states
+            clearFieldError(emailError, emailInput);
+            clearFieldError(passwordError, passwordInput);
             errorMessage.classList.add('hidden');
             successMessage.classList.add('hidden');
-            emailError.textContent = '';
-            passwordError.textContent = '';
-            errorMessage.textContent = '';
 
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
 
             // Client-side validation
             let hasError = false;
+            
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                emailError.textContent = 'Please enter a valid email address';
-                emailError.classList.remove('hidden');
-                emailInput.classList.add('border-red-500');
+                showFieldError(emailError, emailErrorText, emailInput, 'Please enter a valid email address');
                 hasError = true;
             }
+            
             if (password.length < 6) {
-                passwordError.textContent = 'Password must be at least 6 characters';
-                passwordError.classList.remove('hidden');
-                passwordInput.classList.add('border-red-500');
+                showFieldError(passwordError, passwordErrorText, passwordInput, 'Password must be at least 6 characters');
                 hasError = true;
             }
+            
             if (hasError) return;
+
+            setLoading(true);
 
             try {
                 const payload = { email, password };
@@ -124,38 +446,38 @@
                 console.log('API Response:', response.status, data);
 
                 if (response.ok) {
-                    showNotification(successMessage, 'Login successful! Redirecting...');
+                    showNotification(successMessage, successText, 'Login successful! Redirecting...');
                     form.reset();
                     setTimeout(() => {
-                        window.location.href = '/';
+                        window.location.href = '/home';
                     }, 2000);
                 } else {
                     // Handle field-specific errors
                     if (data.email) {
-                        emailError.textContent = data.email.join(', ');
-                        emailError.classList.remove('hidden');
-                        emailInput.classList.add('border-red-500');
+                        const message = Array.isArray(data.email) ? data.email.join(', ') : data.email;
+                        showFieldError(emailError, emailErrorText, emailInput, message);
                     }
                     if (data.password) {
-                        passwordError.textContent = data.password.join(', ');
-                        passwordError.classList.remove('hidden');
-                        passwordInput.classList.add('border-red-500');
+                        const message = Array.isArray(data.password) ? data.password.join(', ') : data.password;
+                        showFieldError(passwordError, passwordErrorText, passwordInput, message);
                     }
                     // Handle general errors
                     if (data.message || data.detail) {
-                        showNotification(errorMessage, data.message || data.detail);
+                        showNotification(errorMessage, errorText, data.message || data.detail);
                         // Highlight all fields if "all fields are required"
                         if ((data.message || data.detail || '').toLowerCase().includes('all fields are required')) {
                             emailInput.classList.add('border-red-500');
                             passwordInput.classList.add('border-red-500');
                         }
                     } else {
-                        showNotification(errorMessage, 'Login failed. Check your credentials.');
+                        showNotification(errorMessage, errorText, 'Login failed. Check your credentials.');
                     }
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
-                showNotification(errorMessage, 'An error occurred. Please check your API server.');
+                showNotification(errorMessage, errorText, 'Network error. Please check your connection and try again.');
+            } finally {
+                setLoading(false);
             }
         });
     </script>

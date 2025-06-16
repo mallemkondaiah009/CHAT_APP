@@ -42,6 +42,11 @@ app.use('/api/message', messageRoutes);
 
 // Routes to render templates
 app.get('/', (req, res) => {
+  res.render('landing_page');
+});
+
+
+app.get('/home', (req, res) => {
   res.render('home');
 });
 
