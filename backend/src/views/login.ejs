@@ -49,14 +49,6 @@
             }
         }
 
-        .feature-icon {
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .feature-item:hover .feature-icon {
-            transform: translateY(-2px) scale(1.05);
-        }
-
         .input-group {
             position: relative;
         }
@@ -122,19 +114,10 @@
         }
 
         .logo-text {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-        }
-
-        .pulse-dot {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
         }
 
         .error-shake {
@@ -147,46 +130,122 @@
             75% { transform: translateX(5px); }
         }
 
-        @media (max-width: 768px) {
-            .split-container {
-                flex-direction: column;
+        @media (max-width: 640px) {
+            .login-container {
+                padding: 1.5rem;
             }
-            
-            .left-panel {
-                min-height: 40vh;
-                padding: 2rem 1rem;
+
+            .login-form {
+                padding: 1.5rem;
             }
-            
-            .right-panel {
-                padding: 2rem 1rem;
+
+            .form-input {
+                padding: 18px 12px 6px 12px;
+            }
+
+            .floating-label {
+                left: 12px;
+                top: 14px;
+                font-size: 14px;
+            }
+
+            .form-input:focus + .floating-label,
+            .form-input:not(:placeholder-shown) + .floating-label {
+                top: 6px;
+                font-size: 10px;
+            }
+
+            .btn-primary {
+                padding: 0.75rem 1.5rem;
+            }
+
+            #notification-container {
+                width: 90%;
+                max-width: 320px;
+                padding: 0 0.5rem;
+            }
+
+            #notification-container .notification {
+                font-size: 0.875rem;
+                padding: 0.75rem;
+                display: flex;
+                align-items: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            #notification-container .notification svg {
+                width: 1rem;
+                height: 1rem;
+                flex-shrink: 0;
+            }
+
+            #notification-container .notification p {
+                font-size: 0.875rem;
+                line-height: 1.25rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .login-container {
+                padding: 2rem;
+            }
+
+            .login-form {
+                padding: 2rem;
+            }
+
+            #notification-container {
+                width: 80%;
+                max-width: 400px;
+            }
+
+            #notification-container .notification {
+                font-size: 0.875rem;
+                padding: 1rem;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            #notification-container {
+                width: 400px;
+                max-width: 400px;
+            }
+
+            #notification-container .notification {
+                font-size: 0.875rem;
+                padding: 1rem;
             }
         }
     </style>
 </head>
 <body class="min-h-screen bg-gray-50">
     <!-- Notification Container -->
-    <div id="notification-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
-        <div id="error-message" class="hidden bg-white rounded-xl shadow-2xl p-4 max-w-sm border-l-4 border-red-500">
+    <div id="notification-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-sm px-2 sm:px-0">
+        <div id="error-message" class="hidden bg-white rounded-xl shadow-2xl p-4 border-l-4 border-red-500">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                     </svg>
                 </div>
-                <div class="ml-3">
+                <div class="ml-3 flex-1">
                     <p class="text-sm font-medium text-red-800" id="error-text"></p>
                 </div>
             </div>
         </div>
         
-        <div id="success-message" class="hidden bg-white rounded-xl shadow-2xl p-4 max-w-sm border-l-4 border-green-500">
+        <div id="success-message" class="hidden bg-white rounded-xl shadow-2xl p-4 border-l-4 border-green-500">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <svg class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                     </svg>
                 </div>
-                <div class="ml-3">
+                <div class="ml-3 flex-1">
                     <p class="text-sm font-medium text-green-800" id="success-text">Login successful! Redirecting...</p>
                 </div>
             </div>
@@ -194,142 +253,76 @@
     </div>
 
     <!-- Main Container -->
-    <div class="split-container flex min-h-screen">
-        <!-- Left Panel - Branding -->
-        <div class="left-panel gradient-bg flex-1 flex flex-col justify-center items-center p-12 relative overflow-hidden">
-            <!-- Background Decoration -->
-            <div class="absolute inset-0 opacity-10">
-                <div class="absolute top-10 left-10 w-32 h-32 bg-white rounded-full"></div>
-                <div class="absolute bottom-10 right-10 w-24 h-24 bg-white rounded-full"></div>
-                <div class="absolute top-1/2 left-20 w-16 h-16 bg-white rounded-full"></div>
+    <div class="login-container flex min-h-screen items-center justify-center p-4 sm:p-6 md:p-8">
+        <div class="login-form w-full max-w-md glass-effect rounded-2xl p-6 sm:p-8 shadow-2xl">
+            <div class="text-center mb-8">
+                <h1 class="logo-text text-4xl sm:text-5xl font-bold mb-2">Judas</h1>
+                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                <p class="text-gray-600 text-sm sm:text-base">Sign in to continue your conversations</p>
             </div>
 
-            <div class="relative z-10 text-center max-w-md">
-                <!-- Logo -->
-                <div class="mb-8">
-                    <h1 class="logo-text text-6xl font-bold mb-4">Judas</h1>
-                    <p class="text-white/90 text-lg font-light">Welcome Back</p>
-                </div>
-
-                <!-- Features -->
-                <div class="space-y-6 mb-8">
-                    <div class="feature-item flex items-center text-white/90 hover:text-white transition-colors">
-                        <div class="feature-icon w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Instant Messaging</h3>
-                            <p class="text-sm text-white/70">Continue your conversations</p>
-                        </div>
-                    </div>
-
-                    <div class="feature-item flex items-center text-white/90 hover:text-white transition-colors">
-                        <div class="feature-icon w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Team Collaboration</h3>
-                            <p class="text-sm text-white/70">Connect with your team</p>
-                        </div>
-                    </div>
-
-                    <div class="feature-item flex items-center text-white/90 hover:text-white transition-colors">
-                        <div class="feature-icon w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
-                            <div class="flex items-center space-x-1">
-                                <div class="w-2 h-2 bg-green-400 rounded-full pulse-dot"></div>
-                                <div class="w-2 h-2 bg-white/60 rounded-full"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Real-time Updates</h3>
-                            <p class="text-sm text-white/70">Stay connected always</p>
-                        </div>
+            <form id="loginForm" class="space-y-6">
+                <!-- Email -->
+                <div class="input-group">
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input w-full border border-gray-200 rounded-xl bg-white/70 placeholder-transparent focus:outline-none" 
+                        placeholder="Email Address"
+                        required
+                    >
+                    <label for="email" class="floating-label">Email Address</label>
+                    <div id="email-error" class="text-red-500 text-sm mt-2 hidden flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span id="email-error-text"></span>
                     </div>
                 </div>
 
-                <div class="text-white/60 text-sm">
-                    Secure and reliable communication platform
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Panel - Login Form -->
-        <div class="right-panel flex-1 flex items-center justify-center p-12 bg-gray-50">
-            <div class="w-full max-w-md">
-                <div class="glass-effect rounded-2xl p-8 shadow-2xl">
-                    <div class="text-center mb-8">
-                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-                        <p class="text-gray-600">Sign in to continue your conversations</p>
-                    </div>
-
-                    <form id="loginForm" class="space-y-6">
-                        <!-- Email -->
-                        <div class="input-group">
-                            <input 
-                                type="email" 
-                                id="email" 
-                                name="email" 
-                                class="form-input w-full border border-gray-200 rounded-xl bg-white/70 placeholder-transparent focus:outline-none" 
-                                placeholder="Email Address"
-                                required
-                            >
-                            <label for="email" class="floating-label">Email Address</label>
-                            <div id="email-error" class="text-red-500 text-sm mt-2 hidden flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                <span id="email-error-text"></span>
-                            </div>
-                        </div>
-
-                        <!-- Password -->
-                        <div class="input-group">
-                            <input 
-                                type="password" 
-                                id="password" 
-                                name="password" 
-                                class="form-input w-full border border-gray-200 rounded-xl bg-white/70 placeholder-transparent focus:outline-none" 
-                                placeholder="Password"
-                                required
-                            >
-                            <label for="password" class="floating-label">Password</label>
-                            <div id="password-error" class="text-red-500 text-sm mt-2 hidden flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                <span id="password-error-text"></span>
-                            </div>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button 
-                            type="submit" 
-                            id="submitBtn"
-                            class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <span id="btn-text">Sign In</span>
-                            <span id="btn-loader" class="hidden">
-                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Signing In...
-                            </span>
-                        </button>
-                    </form>
-
-                    <!-- Signup Link -->
-                    <div class="text-center mt-8 pt-6 border-t border-gray-200">
-                        <p class="text-gray-600">
-                            Don't have an account? 
-                            <a href="/signup" class="font-semibold text-blue-600 hover:text-blue-700 transition-colors">Create account</a>
-                        </p>
+                <!-- Password -->
+                <div class="input-group">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-input w-full border border-gray-200 rounded-xl bg-white/70 placeholder-transparent focus:outline-none" 
+                        placeholder="Password"
+                        required
+                    >
+                    <label for="password" class="floating-label">Password</label>
+                    <div id="password-error" class="text-red-500 text-sm mt-2 hidden flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span id="password-error-text"></span>
                     </div>
                 </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    id="submitBtn"
+                    class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <span id="btn-text">Sign In</span>
+                    <span id="btn-loader" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Signing In...
+                    </span>
+                </button>
+            </form>
+
+            <!-- Signup Link -->
+            <div class="text-center mt-8 pt-6 border-t border-gray-200">
+                <p class="text-gray-600 text-sm sm:text-base">
+                    Don't have an account? 
+                    <a href="/signup" class="font-semibold text-blue-600 hover:text-blue-700 transition-colors">Create account</a>
+                </p>
             </div>
         </div>
     </div>
@@ -435,7 +428,7 @@
             try {
                 const payload = { email, password };
                 console.log('Trying payload:', payload);
-                const response = await fetch('https://judas-dsaj.onrender.com/api/auth/login', {
+                const response = await fetch('https://judas-dsaj.onrender.com//api/auth/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

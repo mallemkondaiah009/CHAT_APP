@@ -335,7 +335,7 @@
         .chat-user-pic {
             width: 36px;
             height: 36px;
-            border-radius: 8px;
+            border-radius: 50%;
             object-fit: cover;
             border: 1px solid var(--gray-200);
         }
@@ -442,6 +442,8 @@
             flex-direction: column;
             gap: 12px;
             flex-shrink: 0;
+            position: relative;
+            z-index: 10;
         }
 
         .message-input-container {
@@ -474,9 +476,8 @@
             width: 44px;
             height: 44px;
             border: none;
-            border-radius: 12px;
+            border-radius: 50%;
             cursor: pointer;
-            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -496,17 +497,34 @@
         }
 
         .send-button {
-            background: var(--primary-500);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: var(--white);
+            position: relative;
+            overflow: hidden;
         }
 
         .send-button:hover {
-            background: var(--primary-600);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
         .send-button:active {
             transform: translateY(0);
+        }
+
+        .send-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .send-button:hover::before {
+            left: 100%;
         }
 
         .image-input {
@@ -575,6 +593,7 @@
             background: var(--gray-100);
             color: var(--gray-700);
             border: 1px solid var(--gray-200);
+            border-radius: 50%;
         }
 
         .cancel-button:hover {
@@ -610,6 +629,7 @@
                 z-index: 5;
                 transform: translateX(100%);
                 transition: transform 0.3s ease;
+                height: 100vh;
             }
             
             .chat-area.show-mobile {
@@ -624,11 +644,13 @@
 
             .chat-header {
                 padding: 12px 16px;
+                min-height: 60px;
             }
 
             .chat-user-pic {
                 width: 32px;
                 height: 32px;
+                border-radius: 50%;
             }
 
             .chat-user-name {
@@ -637,10 +659,23 @@
 
             .messages {
                 padding: 12px 16px;
+                flex: 1;
+                height: calc(100% - 120px);
             }
 
             .message-form {
                 padding: 12px 16px;
+                position: sticky;
+                bottom: 0;
+                z-index: 20;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .message-input-container {
+                display: flex;
+                align-items: center;
+                width: 100%;
             }
 
             .message {
@@ -744,7 +779,7 @@
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script>
-        const API_BASE = "https://judas-dsaj.onrender.com/api";
+        const API_BASE = "https://judas-dsaj.onrender.com//api";
         let currentUserId = null;
         let senderId = null;
         let currentUser = null;
@@ -755,7 +790,7 @@
 
         // Initialize Socket.IO
         function initializeSocket() {
-            socket = io("https://judas-dsaj.onrender.com", {
+            socket = io("https://judas-dsaj.onrender.com/", {
                 query: { userId: senderId },
                 transports: ["websocket"],
             });
@@ -771,21 +806,16 @@
             socket.on("newMessage", (message) => {
                 if (message.senderId === currentUserId || message.receiverId === senderId) {
                     appendMessage(message);
-                    // Update user list: move sender to top and update unread count
                     const userId = message.senderId === senderId ? message.receiverId : message.senderId;
                     const user = allUsers.find(u => u._id === userId);
                     if (user) {
-                        // Update last message
                         user.lastMessage = message;
-                        // Increment unread count if chat is not open
                         if (userId !== currentUserId) {
                             user.unreadCount = (user.unreadCount || 0) + 1;
                         }
-                        // Move user to top
                         allUsers = [user, ...allUsers.filter(u => u._id !== userId)];
                         renderUsers(allUsers);
                     } else {
-                        // Fetch users if sender is not in list (new conversation)
                         fetchUsers();
                     }
                 }
@@ -805,7 +835,6 @@
 
             socket.on("messageRead", ({ messageId }) => {
                 updateMessageReadStatus(messageId);
-                // Refresh user list to update unread counts
                 fetchUsers();
             });
 
@@ -821,6 +850,22 @@
             const chatArea = document.getElementById("chatArea");
             sidebar.classList.add("hide-mobile");
             chatArea.classList.add("show-mobile");
+            // Force reflow to ensure message form is visible
+            setTimeout(() => {
+                const messageForm = document.querySelector(".message-form");
+                if (messageForm) {
+                    messageForm.style.display = "flex";
+                    const messagesDiv = document.getElementById("messages");
+                    if (messagesDiv) {
+                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    }
+                    // Focus on the message input
+                    const messageInput = document.getElementById("messageInput");
+                    if (messageInput) {
+                        messageInput.focus();
+                    }
+                }
+            }, 0);
         }
 
         function showSidebarOnMobile() {
@@ -959,7 +1004,6 @@
                     user.lastMessage = messages && messages.length > 0 ? messages[messages.length - 1] : null;
                     user.unreadCount = messages ? messages.filter(msg => msg.senderId === user._id && !msg.read).length : 0;
                 }
-                // Sort users by last message timestamp (newest first)
                 allUsers.sort((a, b) => {
                     const aTime = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
                     const bTime = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
@@ -1086,9 +1130,20 @@
                     </div>
                     <div class="message-input-container">
                         <input type="text" class="message-input" id="messageInput" placeholder="Type your message...">
-                        <button type="button" class="action-button image-upload-button" id="imageUploadButton">📎</button>
+                        <button type="button" class="action-button image-upload-button" id="imageUploadButton">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </button>
                         <input type="file" class="image-input" id="imageInput" accept="image/*">
-                        <button type="submit" class="action-button send-button">➤</button>
+                        <button type="submit" class="action-button send-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
                     </div>
                 </form>
             `;
@@ -1135,6 +1190,8 @@
                         socket.emit("stopTyping", { receiverId: currentUserId });
                     }, 1000);
                 });
+                // Focus on message input immediately after rendering
+                messageInput.focus();
             }
 
             await fetchMessages(userId);
@@ -1225,13 +1282,11 @@
                 const messages = await response.json();
                 if (!Array.isArray(messages)) throw new Error("Messages response is not an array");
                 
-                // Mark unread messages as read
                 const unreadMessages = messages.filter(msg => msg.senderId === userId && !msg.read);
                 if (unreadMessages.length > 0) {
                     for (const msg of unreadMessages) {
                         socket.emit("markAsRead", { messageId: msg._id, receiverId: senderId });
                     }
-                    // Update unread count in allUsers
                     const user = allUsers.find(u => u._id === userId);
                     if (user) {
                         user.unreadCount = 0;
@@ -1294,7 +1349,6 @@
                     imagePreview.style.display = "none";
                 }
                 await fetchMessages(currentUserId);
-                // Move receiver to top of user list
                 const user = allUsers.find(u => u._id === currentUserId);
                 if (user) {
                     user.lastMessage = {
